@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/headlines_page"
+        android:enabled="true"
+        android:icon="@drawable/ic_headlines"
+        android:title="@string/text_headlines"/>
+    <item
+        android:id="@+id/saved_page"
+        android:enabled="true"
+        android:icon="@drawable/ic_saved"
+        android:title="@string/text_saved"/>
+    <item
+        android:id="@+id/sources_page"
+        android:enabled="true"
+        android:icon="@drawable/ic_sources"
+        android:title="@string/text_sources"/>
+</menu>

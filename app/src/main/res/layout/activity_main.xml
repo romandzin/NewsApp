@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
     android:background="@color/main_blue"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:context=".ui.activity.MainActivity">
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animationView"
@@ -23,9 +23,29 @@
 
     <include
         android:id="@+id/toolbar"
+        layout="@layout/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:visibility="invisible"
-        layout="@layout/toolbar"/>
+        android:visibility="invisible" />
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavView"/>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:itemBackground="@color/main_blue"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        android:visibility="gone"
+        app:itemActiveIndicatorStyle="@style/App.Custom.Indicator"
+        app:labelVisibilityMode="selected"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_navigation_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>

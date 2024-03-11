@@ -1,22 +1,18 @@
-package com.news.app
+package com.news.app.ui.activity
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.view.ViewAnimationUtils
-import android.widget.ImageView
-import android.widget.Toolbar
+import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import com.airbnb.lottie.LottieAnimationView
+import com.news.app.R
 import com.news.app.databinding.ActivityMainBinding
-import java.time.Clock
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import kotlin.math.max
+import com.news.app.ui.fragment.HeadLinesFragment
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
@@ -26,6 +22,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        continueSplashScreenAnimationInActivity(splashScreen)
+        initView()
+    }
+
+    private fun continueSplashScreenAnimationInActivity(splashScreen: SplashScreen) {
         splashScreen.setOnExitAnimationListener { vp ->
             val lottieView = findViewById<LottieAnimationView>(R.id.animationView)
             lottieView.enableMergePathsForKitKatAndAbove(true)
@@ -37,14 +38,45 @@ class MainActivity : AppCompatActivity() {
 
             lottieView.addAnimatorListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    binding.toolbar.toolbarActionbar.isVisible = true
+                    showMainScreen()
                     setTheme(R.style.Base_Theme_NewsApp_NewTheme)
                     binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
-                    binding.animationView.visibility = View.GONE
                     setSupportActionBar(binding.toolbar.toolbarActionbar)
                 }
             })
         }
+    }
+
+    private fun showMainScreen() {
+        binding.animationView.visibility = View.GONE
+        binding.bottomNavView.isVisible = true
+        binding.fragmentContainerView.isVisible = true
+        binding.toolbar.toolbarActionbar.isVisible = true
+    }
+
+    private fun initView() {
+        binding.bottomNavView.setOnItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.headlines_page -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(binding.fragmentContainerView.id, HeadLinesFragment())
+                        .addToBackStack("headLinesFragment")
+                        .commit()
+                    true
+                }
+
+                R.id.saved_page -> {
+                    true
+                }
+
+                R.id.sources_page -> {
+                    true
+                }
+
+                else -> false
+            }
+        }
+        binding.bottomNavView.selectedItemId = R.id.headlines_page
     }
 
     override fun onResume() {
