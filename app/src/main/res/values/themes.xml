@@ -28,4 +28,23 @@
     <style name="App.Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">@color/darker_blue</item>
     </style>
+
+    <style name="ThemeOverlay.Material3.MaterialCalendar.New" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/main_blue</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorSecondaryContainer">@color/light_blue</item>
+        <item name="colorSurfaceContainerHigh">@color/white</item>
+        <item name="colorPrimaryDark">@color/main_blue</item>
+        <!--<item name="colorSurface">@color/white</item>
+        <item name="colorAccent">@color/white</item>
+        ThemeOverlay.MaterialComponents.MaterialCalendar-->
+        <!--<item name="colorOnPrimary">@color/white</item>
+        <item name="colorBackgroundFloating">@color/white</item>
+
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:headerBackground">@color/white</item>
+        <item name="colorPrimaryDark">@color/white</item>
+
+        <item name="colorContainer">@color/white</item> -->
+    </style>
 </resources>

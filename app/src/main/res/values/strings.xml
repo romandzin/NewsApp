@@ -8,4 +8,17 @@
     <string name="general_text">General</string>
     <string name="business_text">Business</string>
     <string name="traveling_text">Traveling</string>
+    <string name="saved_text">Saved</string>
+    <string name="news_app_text">News APP</string>
+    <string name="sources_text">Sources</string>
+    <string name="filter">Filter</string>
+    <string name="popular">Popular</string>
+    <string name="relevant">Relevant</string>
+    <string name="new_text">New</string>
+    <string name="date">Date</string>
+    <string name="language">Language</string>
+    <string name="choose_date">Choose date</string>
+    <string name="russian">Русский</string>
+    <string name="english">English</string>
+    <string name="deutsch">Deutsch</string>
 </resources>

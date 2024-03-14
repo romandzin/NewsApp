@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/baseToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/main_blue">
+
+        <TextView
+            android:id="@+id/toolbarBaseText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/main_blue"
+            android:text="@string/news_app_text"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/searchButton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            app:layout_constraintTop_toTopOf="@id/toolbarBaseText"
+            app:layout_constraintBottom_toBottomOf="@id/toolbarBaseText"
+            app:layout_constraintEnd_toStartOf="@+id/filter_button"
+            app:layout_constraintStart_toEndOf="@id/toolbarBaseText"
+            android:background="@drawable/ic_search" />
+
+        <ImageView
+            android:id="@+id/filter_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="15dp"
+            app:layout_constraintTop_toTopOf="@id/toolbarBaseText"
+            app:layout_constraintBottom_toBottomOf="@id/toolbarBaseText"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@drawable/ic_filter" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
