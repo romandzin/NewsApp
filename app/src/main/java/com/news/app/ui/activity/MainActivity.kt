@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -41,8 +42,7 @@ class MainActivity : AppCompatActivity() {
             setTheme(R.style.Base_Theme_NewsApp_NewTheme)
             binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
             setSupportActionBar(binding.toolbar.toolbarActionbar)
-        }
-        else {
+        } else {
             if (viewModel.isAnimationContinue) {
                 val lottieView = findViewById<LottieAnimationView>(R.id.animationView)
                 lottieView.enableMergePathsForKitKatAndAbove(true)
@@ -149,11 +149,13 @@ class MainActivity : AppCompatActivity() {
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.VISIBLE
             }
+
             ToolbarState.Filter -> {
                 binding.toolbar.toolbarFilter.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
             }
+
             ToolbarState.Search -> {
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.VISIBLE

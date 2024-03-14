@@ -26,9 +26,9 @@
         android:layout_height="28dp"
         android:layout_marginStart="20dp"
         android:background="@drawable/ic_back"
-        app:layout_constraintBottom_toBottomOf="@id/toolbarText"
+        app:layout_constraintBottom_toBottomOf="@id/toolbarFilterText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbarText" />
+        app:layout_constraintTop_toTopOf="@id/toolbarFilterText" />
 
     <ImageView
         android:id="@+id/completeButton"
@@ -36,7 +36,7 @@
         android:layout_height="28dp"
         android:layout_marginEnd="15dp"
         android:background="@drawable/ic_check"
-        app:layout_constraintBottom_toBottomOf="@id/toolbarText"
+        app:layout_constraintBottom_toBottomOf="@id/toolbarFilterText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbarText" />
+        app:layout_constraintTop_toTopOf="@id/toolbarFilterText" />
 </androidx.constraintlayout.widget.ConstraintLayout>
