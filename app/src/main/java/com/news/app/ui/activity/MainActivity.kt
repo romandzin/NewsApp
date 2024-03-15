@@ -2,9 +2,11 @@ package com.news.app.ui.activity
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
@@ -26,14 +28,44 @@ class MainActivity : AppCompatActivity() {
     val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
+    var isBackPressed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    isBackPressed = true
+                    val size = supportFragmentManager.backStackEntryCount
+                    if (size == 1) finish()
+                    else {
+                        val previousCurrent = supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
+                        val tagNew = previousCurrent.name
+                        val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
+                        when (fragmentNew!!::class.java) {
+                            HeadLinesFragment::class.java -> {
+                                binding.bottomNavView.selectedItemId =
+                                    R.id.headlines_page
+                            }
+
+                            SourcesFragment::class.java -> {
+                                binding.bottomNavView.selectedItemId = R.id.sources_page
+                            }
+
+                            SavedFragment::class.java -> {
+                                binding.bottomNavView.selectedItemId = R.id.saved_page
+                            }
+                        }
+                        supportFragmentManager.popBackStack()
+                    }
+                    isBackPressed = false
+                }
+            })
         continueSplashScreenAnimationInActivity(splashScreen)
-        initView()
     }
 
     private fun continueSplashScreenAnimationInActivity(splashScreen: SplashScreen) {
@@ -52,11 +84,12 @@ class MainActivity : AppCompatActivity() {
 
                 lottieView.addAnimatorListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        viewModel.isReady = true
                         showMainScreen()
                         setTheme(R.style.Base_Theme_NewsApp_NewTheme)
                         binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
                         setSupportActionBar(binding.toolbar.toolbarActionbar)
+                        initView()
+                        viewModel.isReady = true
                     }
                 })
             }
@@ -94,40 +127,34 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.headlines_page -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(binding.fragmentContainerView.id, HeadLinesFragment())
-                        .addToBackStack("headLinesFragment")
-                        .commit()
-                    binding.toolbar.toolbarDefault.toolbarBaseText.setText(R.string.news_app_text)
+                    if (!isBackPressed) moveToFragment(HeadLinesFragment(), "headlinesFragment")
+                    setNewToolbarState(
+                        ToolbarState.Default,
+                        getText(R.string.news_app_text).toString()
+                    )
                     true
                 }
 
                 R.id.saved_page -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(binding.fragmentContainerView.id, SavedFragment())
-                        .addToBackStack("savedFragment")
-                        .commit()
-                    binding.toolbar.toolbarDefault.toolbarBaseText.setText(R.string.saved_text)
+                    if (!isBackPressed) moveToFragment(SavedFragment(), "savedFragment")
+                    setNewToolbarState(ToolbarState.Default, "Saved")
                     true
                 }
 
                 R.id.sources_page -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(binding.fragmentContainerView.id, SourcesFragment())
-                        .addToBackStack("sourcesFragment")
-                        .commit()
-                    binding.toolbar.toolbarDefault.toolbarBaseText.setText(R.string.sources_text)
+                    if (!isBackPressed) moveToFragment(SourcesFragment(), "sourcesFragment")
+                    setNewToolbarState(ToolbarState.Default, "Sources")
                     true
                 }
 
                 else -> false
             }
         }
-        //binding.bottomNavView.selectedItemId = R.id.headlines_page
         binding.toolbar.toolbarDefault.filterButton.setOnClickListener {
             moveToFragment(FiltersFragment.newInstance(), "filterFragment")
             setNewToolbarState(ToolbarState.Filter)
         }
+        if (!viewModel.isReady) binding.bottomNavView.selectedItemId = R.id.headlines_page
     }
 
     override fun onResume() {
@@ -137,19 +164,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveToFragment(fragment: Fragment, nameTag: String) {
         supportFragmentManager.beginTransaction()
-            .replace(binding.fragmentContainerView.id, fragment)
+            .replace(binding.fragmentContainerView.id, fragment, nameTag)
             .addToBackStack(nameTag)
             .commit()
     }
 
-    private fun setNewToolbarState(currentToolbarState: ToolbarState) {
-        when (currentToolbarState) {
-            ToolbarState.Default -> {
-                binding.toolbar.toolbarFilter.root.visibility = View.GONE
-                binding.toolbar.toolbarSearch.root.visibility = View.GONE
-                binding.toolbar.toolbarDefault.root.visibility = View.VISIBLE
-            }
+    private fun moveToFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.fragmentContainerView.id, fragment)
+            .commit()
+    }
 
+    private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {
+        when (currentToolbarState) {
             ToolbarState.Filter -> {
                 binding.toolbar.toolbarFilter.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
@@ -160,6 +187,13 @@ class MainActivity : AppCompatActivity() {
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
+            }
+
+            else -> {
+                binding.toolbar.toolbarFilter.root.visibility = View.GONE
+                binding.toolbar.toolbarSearch.root.visibility = View.GONE
+                binding.toolbar.toolbarDefault.root.visibility = View.VISIBLE
+                binding.toolbar.toolbarDefault.toolbarBaseText.text = toolbarText
             }
         }
     }

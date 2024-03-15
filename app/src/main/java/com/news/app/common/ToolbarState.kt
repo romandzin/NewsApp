@@ -5,4 +5,5 @@ enum class ToolbarState {
     Default,
     Filter,
     Search,
+    Sources,
 }
