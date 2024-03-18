@@ -6,4 +6,5 @@ enum class ToolbarState {
     Filter,
     Search,
     Sources,
+    Gone,
 }

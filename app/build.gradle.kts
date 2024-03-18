@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("kapt")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -63,4 +64,12 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.6.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+
+    implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
+
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
+    implementation("com.google.android.material:material:1.11.0")
 }

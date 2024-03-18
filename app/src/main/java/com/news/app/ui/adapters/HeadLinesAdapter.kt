@@ -8,11 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.news.app.R
+import com.news.app.common.Navigator
 import com.news.app.model.data_classes.News
+import com.news.app.ui.fragments.NewsDetailsFragment
 
-class HeadLinesAdapter(var arrayList: ArrayList<News>): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
-
-    private var moveList = arrayList.toMutableList()
+class HeadLinesAdapter(var arrayList: ArrayList<News>, val navigator: Navigator): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlinesViewHolder {
         val view: View =
@@ -22,20 +22,13 @@ class HeadLinesAdapter(var arrayList: ArrayList<News>): RecyclerView.Adapter<Hea
 
     override fun onBindViewHolder(holder: HeadlinesViewHolder, position: Int) {
         holder.bindData(arrayList[position])
+        holder.itemView.setOnClickListener {
+            clickItem(arrayList[position])
+        }
     }
 
-    private fun clickItem(holder: RecyclerView.ViewHolder) {
-        val news: News = arrayList[holder.adapterPosition]
-        val currentHolder = holder as HeadlinesViewHolder
-       /* if (!currentHolder.checkBox.isChecked) {
-            currentHolder.checkBox.isVisible = true
-            currentHolder.checkBox.isChecked = true
-            (context as MainActivity).mainViewModel.deleteList.add(news)
-        } else {
-            currentHolder.checkBox.isVisible = false
-            currentHolder.checkBox.isChecked = false
-            (context as MainActivity).mainViewModel.deleteList.remove(news)
-        } */
+    private fun clickItem(article: News) {
+        navigator.moveToDetailsFragment(NewsDetailsFragment.newInstance(article), "detailsFragment")
     }
 
     override fun getItemCount(): Int {

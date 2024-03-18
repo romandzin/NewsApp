@@ -15,15 +15,17 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.airbnb.lottie.LottieAnimationView
 import com.news.app.R
+import com.news.app.common.Navigator
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
+import com.news.app.ui.fragments.NewsDetailsFragment
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.viewmodels.MainViewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Navigator {
     lateinit var binding: ActivityMainBinding
     val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
@@ -43,7 +45,8 @@ class MainActivity : AppCompatActivity() {
                     val size = supportFragmentManager.backStackEntryCount
                     if (size == 1) finish()
                     else {
-                        val previousCurrent = supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
+                        val previousCurrent =
+                            supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
                         val tagNew = previousCurrent.name
                         val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
                         when (fragmentNew!!::class.java) {
@@ -70,50 +73,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun continueSplashScreenAnimationInActivity(splashScreen: SplashScreen) {
         if (viewModel.isReady) {
-            showMainScreen()
-            setTheme(R.style.Base_Theme_NewsApp_NewTheme)
-            binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
-            setSupportActionBar(binding.toolbar.toolbarActionbar)
-        } else {
-            if (viewModel.isAnimationContinue) {
-                val lottieView = findViewById<LottieAnimationView>(R.id.animationView)
-                lottieView.enableMergePathsForKitKatAndAbove(true)
-                lottieView.postDelayed({
-                    lottieView!!.playAnimation()
-                }, 1000)
-
-                lottieView.addAnimatorListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        showMainScreen()
-                        setTheme(R.style.Base_Theme_NewsApp_NewTheme)
-                        binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
-                        setSupportActionBar(binding.toolbar.toolbarActionbar)
-                        initView()
-                        viewModel.isReady = true
-                    }
-                })
-            }
+            prepareMainActivity()
         }
         splashScreen.setOnExitAnimationListener { vp ->
             viewModel.isAnimationContinue = true
-            val lottieView = findViewById<LottieAnimationView>(R.id.animationView)
-            lottieView.enableMergePathsForKitKatAndAbove(true)
-            lottieView.postDelayed({
-                vp.view.alpha = 0f
-                vp.iconView.alpha = 0f
-                lottieView!!.playAnimation()
-            }, 1000)
-
-            lottieView.addAnimatorListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    viewModel.isReady = true
-                    showMainScreen()
-                    setTheme(R.style.Base_Theme_NewsApp_NewTheme)
-                    binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
-                    setSupportActionBar(binding.toolbar.toolbarActionbar)
-                }
-            })
+            vp.view.alpha = 0f
+            vp.iconView.alpha = 0f
+            startLottieAnimationAsPartOfSplashScreen()
         }
+    }
+
+    private fun startLottieAnimationAsPartOfSplashScreen() {
+        binding.animationView.enableMergePathsForKitKatAndAbove(true)
+        binding.animationView.playAnimation()
+
+        binding.animationView.addAnimatorListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                prepareMainActivity()
+                initView()
+                viewModel.isReady = true
+            }
+        })
+    }
+
+    private fun prepareMainActivity() {
+        showMainScreen()
+        setTheme(R.style.Base_Theme_NewsApp_NewTheme)
+        binding.root.setBackgroundColor(resources.getColor(R.color.white, theme))
+        setSupportActionBar(binding.toolbar.toolbarActionbar)
     }
 
     private fun showMainScreen() {
@@ -169,27 +156,36 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun moveToFragment(fragment: Fragment) {
+    override fun moveToDetailsFragment(fragment: Fragment, nameTag: String) {
         supportFragmentManager.beginTransaction()
-            .replace(binding.fragmentContainerView.id, fragment)
+            .replace(binding.fragmentContainerView.id, fragment, nameTag)
+            .addToBackStack(nameTag)
             .commit()
+        setNewToolbarState(ToolbarState.Gone)
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {
         when (currentToolbarState) {
             ToolbarState.Filter -> {
+                binding.toolbar.root.isVisible = true
                 binding.toolbar.toolbarFilter.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
             }
 
             ToolbarState.Search -> {
+                binding.toolbar.root.isVisible = true
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
             }
 
+            ToolbarState.Gone -> {
+                binding.toolbar.root.visibility = View.GONE
+            }
+
             else -> {
+                binding.toolbar.root.isVisible = true
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.VISIBLE

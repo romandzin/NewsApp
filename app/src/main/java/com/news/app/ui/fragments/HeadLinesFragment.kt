@@ -11,6 +11,7 @@ import com.news.app.model.data_classes.News
 import com.news.app.moxy.MvpAppCompatFragment
 import com.news.app.moxy.views.HeadLinesView
 import com.news.app.presenters.HeadlinesPresenter
+import com.news.app.ui.activity.MainActivity
 import com.news.app.ui.adapters.HeadLinesAdapter
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -27,20 +28,18 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHeadLinesBinding.inflate(layoutInflater)
-        headLinesAdapter = HeadLinesAdapter(arrayListOf())
+        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity)
         binding.newsRecyclerView.adapter = headLinesAdapter
         viewShowed()
         return binding.root
     }
 
     override fun viewShowed() {
-        MainScope().launch {
             headlinesPresenter.viewShowed()
-        }
     }
 
     override fun displayNewsList(newsList: ArrayList<News>) {
-        requireActivity().runOnUiThread {headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)}
+        headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)
     }
 
     override fun showError() {
