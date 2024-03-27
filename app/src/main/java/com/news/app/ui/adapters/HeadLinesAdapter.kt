@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.news.app.R
 import com.news.app.common.Navigator
-import com.news.app.model.data_classes.News
+import com.news.app.data.model.Article
 import com.news.app.ui.fragments.NewsDetailsFragment
 
-class HeadLinesAdapter(var arrayList: ArrayList<News>, val navigator: Navigator): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
+class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigator): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlinesViewHolder {
         val view: View =
@@ -27,7 +27,7 @@ class HeadLinesAdapter(var arrayList: ArrayList<News>, val navigator: Navigator)
         }
     }
 
-    private fun clickItem(article: News) {
+    private fun clickItem(article: Article) {
         navigator.moveToDetailsFragment(NewsDetailsFragment.newInstance(article), "detailsFragment")
     }
 
@@ -35,7 +35,7 @@ class HeadLinesAdapter(var arrayList: ArrayList<News>, val navigator: Navigator)
         return arrayList.size
     }
 
-    fun setData(oldList: ArrayList<News>, newList: ArrayList<News>) {
+    fun setData(oldList: ArrayList<Article>, newList: ArrayList<Article>) {
         val diffCallback = DiffCallback(oldList, newList)
         val diffCourses = DiffUtil.calculateDiff(diffCallback)
         diffCourses.dispatchUpdatesTo(this)
@@ -56,13 +56,13 @@ class HeadLinesAdapter(var arrayList: ArrayList<News>, val navigator: Navigator)
             newsTextView = itemView.findViewById(R.id.news_text)
         }
 
-        fun bindData(news: News) {
+        fun bindData(news: Article) {
             channelNameTextView.text = news.source.name
             newsTextView.text = news.newsTitle
         }
     }
 
-    inner class DiffCallback(private val oldList: ArrayList<News>, private val newList: ArrayList<News>): DiffUtil.Callback() {
+    inner class DiffCallback(private val oldList: ArrayList<Article>, private val newList: ArrayList<Article>): DiffUtil.Callback() {
 
         override fun getOldListSize(): Int = oldList.size
 

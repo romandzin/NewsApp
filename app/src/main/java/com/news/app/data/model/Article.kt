@@ -1,11 +1,11 @@
-package com.news.app.model.data_classes
+package com.news.app.data.model
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class News(
+data class Article(
 
     @SerializedName("source")
     val source: Source,

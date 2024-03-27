@@ -1,4 +1,4 @@
-package com.news.app.model.retrofit
+package com.news.app.data.retrofit
 
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory

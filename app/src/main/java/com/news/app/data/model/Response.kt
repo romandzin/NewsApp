@@ -1,4 +1,4 @@
-package com.news.app.model.data_classes
+package com.news.app.data.model
 
 import com.google.gson.annotations.SerializedName
 
@@ -7,5 +7,5 @@ data class Response(
     val status: String,
 
     @SerializedName("articles")
-    val articles: ArrayList<News>
+    val articles: ArrayList<Article>
 )

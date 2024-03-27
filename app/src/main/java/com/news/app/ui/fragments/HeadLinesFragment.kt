@@ -1,25 +1,24 @@
 package com.news.app.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.material.tabs.TabLayout
+import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
-import com.news.app.model.data_classes.News
-import com.news.app.moxy.MvpAppCompatFragment
-import com.news.app.moxy.views.HeadLinesView
-import com.news.app.presenters.HeadlinesPresenter
 import com.news.app.ui.activity.MainActivity
 import com.news.app.ui.adapters.HeadLinesAdapter
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import com.news.app.ui.moxy.MvpAppCompatFragment
+import com.news.app.ui.moxy.views.HeadLinesView
+import com.news.app.ui.presenters.HeadlinesPresenter
 import moxy.presenter.InjectPresenter
 
 class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
-    @InjectPresenter lateinit var headlinesPresenter: HeadlinesPresenter
+    @InjectPresenter
+    lateinit var headlinesPresenter: HeadlinesPresenter
     private lateinit var binding: FragmentHeadLinesBinding
     private lateinit var headLinesAdapter: HeadLinesAdapter
 
@@ -28,17 +27,50 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHeadLinesBinding.inflate(layoutInflater)
-        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity)
-        binding.newsRecyclerView.adapter = headLinesAdapter
-        viewShowed()
+        setAdapter()
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                setTabByCategory()
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                setTabByCategory()
+            }
+
+        })
+        initView()
         return binding.root
     }
 
-    override fun viewShowed() {
-            headlinesPresenter.viewShowed()
+    private fun setTabByCategory() {
+        when (binding.tabLayout.selectedTabPosition) {
+            0 -> tabSelected("general")
+            1 -> tabSelected("business")
+            2 -> tabSelected("technology")
+        }
     }
 
-    override fun displayNewsList(newsList: ArrayList<News>) {
+    private fun setAdapter() {
+        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity)
+        binding.newsRecyclerView.adapter = headLinesAdapter
+    }
+
+    override fun tabSelected(category: String) {
+        headlinesPresenter.tabSelected(category)
+    }
+
+    override fun initView() {
+        headlinesPresenter.initView()
+    }
+
+    override fun setSelectedTab(index: Int) {
+        val tab = binding.tabLayout.getTabAt(index)
+        tab!!.select()
+    }
+
+    override fun displayNewsList(newsList: ArrayList<Article>) {
         headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)
     }
 

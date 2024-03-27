@@ -1,6 +1,6 @@
-package com.news.app.moxy.views
+package com.news.app.ui.moxy.views
 
-import com.news.app.model.data_classes.News
+import com.news.app.data.model.Article
 import moxy.MvpView
 import moxy.viewstate.strategy.OneExecutionStateStrategy
 import moxy.viewstate.strategy.StateStrategyType
@@ -9,9 +9,13 @@ import moxy.viewstate.strategy.StateStrategyType
 @StateStrategyType(value = OneExecutionStateStrategy::class)
 interface HeadLinesView: MvpView {
 
-    fun viewShowed()
+    fun tabSelected(category: String)
 
-    fun displayNewsList(newsList: ArrayList<News>)
+    fun initView()
+
+    fun setSelectedTab(index: Int)
+
+    fun displayNewsList(newsList: ArrayList<Article>)
 
     fun showError()
 

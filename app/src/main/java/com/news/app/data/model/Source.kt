@@ -1,4 +1,4 @@
-package com.news.app.model.data_classes
+package com.news.app.data.model
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName

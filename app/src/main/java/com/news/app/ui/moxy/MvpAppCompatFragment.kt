@@ -1,4 +1,4 @@
-package com.news.app.moxy
+package com.news.app.ui.moxy
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

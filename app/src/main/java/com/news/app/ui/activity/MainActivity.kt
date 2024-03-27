@@ -23,7 +23,7 @@ import com.news.app.ui.fragments.HeadLinesFragment
 import com.news.app.ui.fragments.NewsDetailsFragment
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
-import com.news.app.viewmodels.MainViewModel
+import com.news.app.ui.viewmodels.MainViewModel
 
 class MainActivity : AppCompatActivity(), Navigator {
     lateinit var binding: ActivityMainBinding
