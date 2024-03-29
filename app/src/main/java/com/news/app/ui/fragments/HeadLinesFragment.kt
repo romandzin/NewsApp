@@ -63,6 +63,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
     override fun initView() {
         headlinesPresenter.initView()
+        //headlinesPresenter.getList()
     }
 
     override fun setSelectedTab(index: Int) {
@@ -74,8 +75,8 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)
     }
 
-    override fun showError() {
-        Toast.makeText(requireContext(), "text", Toast.LENGTH_LONG).show()
+    override fun showError(errorText: String) {
+        Toast.makeText(requireContext(), errorText, Toast.LENGTH_LONG).show()
     }
 
 }

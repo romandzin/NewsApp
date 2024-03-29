@@ -1,20 +1,29 @@
 package com.news.app.data
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.news.app.data.db.DbObject
 import com.news.app.data.db.SavedDao
+import com.news.app.data.mappers.ArticleDbToArticleMapper
+import com.news.app.data.model.Article
 import com.news.app.data.model.Response
 import com.news.app.data.model.Source
+import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.data.retrofit.RetrofitObj
 import com.news.app.domain.Repository
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Call
+import javax.inject.Inject
 
-class RepositoryImpl : Repository {
-    private val newsServiceApi = RetrofitObj.service
-    private lateinit var savedDao: SavedDao
+class RepositoryImpl @Inject constructor(
+    var newsServiceApi: ApiNewsService,
+   // var savedDao: SavedDao,
+    var articleDbToArticleMapper: ArticleDbToArticleMapper
+): Repository {
 
     override fun getHeadlinesNews(category: String, apiKey: String): Observable<Response> {
         return newsServiceApi.getHeadlinesNews(category, apiKey)
@@ -24,4 +33,14 @@ class RepositoryImpl : Repository {
         return newsServiceApi.getSources()
     }
 
+    @SuppressLint("CheckResult")
+    override fun getSavedList(): Observable<ArrayList<Article>> {
+       /*return savedDao.getAllArticles()
+            .subscribeOn(Schedulers.io())
+            .flatMap { dbEntityList ->
+                val articlesList = dbEntityList.map { dbElement -> articleDbToArticleMapper.transform(dbElement) } as java.util.ArrayList
+                Observable.fromArray(articlesList)
+            } */
+        return Observable.empty()
+    }
 }

@@ -3,18 +3,24 @@ package com.news.app.ui.presenters
 import android.annotation.SuppressLint
 import com.news.app.data.RepositoryImpl
 import com.news.app.domain.Repository
+import com.news.app.ui.di.common.DaggerRepositoryComponent
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.InjectViewState
 import moxy.MvpPresenter
+import javax.inject.Inject
 
 @InjectViewState
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
-    private val dataRepository: Repository = RepositoryImpl()
+    @Inject lateinit var dataRepository: Repository
     private var category = "general"
 
     override fun attachView(view: HeadLinesView?) {
+        DaggerRepositoryComponent
+            .builder()
+            .build()
+            .inject(this)
         super.attachView(view)
     }
 
@@ -34,6 +40,16 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { response ->
                 viewState.displayNewsList(response.articles)
+            }
+    }
+
+    @SuppressLint("CheckResult")
+    fun getList() {
+        dataRepository.getSavedList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { savedList ->
+                viewState.showError(savedList.toString())
             }
     }
 
