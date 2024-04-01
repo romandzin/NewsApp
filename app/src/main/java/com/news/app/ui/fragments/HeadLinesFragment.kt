@@ -3,9 +3,13 @@ package com.news.app.ui.fragments
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.OnScrollChangeListener
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
@@ -41,6 +45,11 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             }
 
         })
+        binding.nestedScrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (!(v as NestedScrollView).canScrollVertically(1)) {
+                headlinesPresenter.scrolledToEnd()
+            }
+        }
         refreshView()
         return binding.root
     }
@@ -81,11 +90,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun showLoading() {
+        binding.paginationProgressBar.isVisible = false
         binding.loadingProgressBar.isVisible = true
         binding.newsRecyclerView.isVisible = false
     }
 
     override fun hideLoading() {
+        binding.paginationProgressBar.isVisible = true
         binding.loadingProgressBar.isVisible = false
         binding.newsRecyclerView.isVisible = true
     }

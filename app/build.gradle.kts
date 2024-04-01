@@ -58,13 +58,12 @@ dependencies {
     kapt("com.github.moxy-community:moxy-compiler:2.2.2")
     implementation("tech.schoolhelper:moxy-x-material:1.7.0")
 
-    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
-
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.6.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
 
     implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")

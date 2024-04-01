@@ -11,7 +11,7 @@ import retrofit2.http.Query
 
 interface Repository {
 
-    fun getHeadlinesNews(category: String, apiKey: String = API_KEY): Observable<Response>
+    fun getHeadlinesNews(category: String, pageSize: Int, page: Int, apiKey: String = API_KEY): Observable<Response>
 
     fun getSources(): Call<ArrayList<Source>>
 

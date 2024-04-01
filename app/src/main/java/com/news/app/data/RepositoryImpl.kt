@@ -25,8 +25,8 @@ class RepositoryImpl @Inject constructor(
     var articleDbToArticleMapper: ArticleDbToArticleMapper
 ): Repository {
 
-    override fun getHeadlinesNews(category: String, apiKey: String): Observable<Response> {
-        return newsServiceApi.getHeadlinesNews(category, apiKey)
+    override fun getHeadlinesNews(category: String, pageSize: Int, page: Int, apiKey: String): Observable<Response> {
+        return newsServiceApi.getHeadlinesNews(category, pageSize, page, apiKey)
     }
 
     override fun getSources(): Call<ArrayList<Source>> {
