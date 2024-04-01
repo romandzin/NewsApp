@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.google.android.material.tabs.TabLayout
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
@@ -40,7 +41,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             }
 
         })
-        initView()
+        refreshView()
         return binding.root
     }
 
@@ -61,8 +62,8 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         headlinesPresenter.tabSelected(category)
     }
 
-    override fun initView() {
-        headlinesPresenter.initView()
+    override fun refreshView() {
+        headlinesPresenter.refreshView()
         //headlinesPresenter.getList()
     }
 
@@ -77,6 +78,16 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
     override fun showError(errorText: String) {
         Toast.makeText(requireContext(), errorText, Toast.LENGTH_LONG).show()
+    }
+
+    override fun showLoading() {
+        binding.loadingProgressBar.isVisible = true
+        binding.newsRecyclerView.isVisible = false
+    }
+
+    override fun hideLoading() {
+        binding.loadingProgressBar.isVisible = false
+        binding.newsRecyclerView.isVisible = true
     }
 
 }

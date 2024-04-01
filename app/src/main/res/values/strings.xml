@@ -21,4 +21,6 @@
     <string name="russian">Русский</string>
     <string name="english">English</string>
     <string name="deutsch">Deutsch</string>
+    <string name="internet_error">No internet connection</string>
+    <string name="refresh">Refresh</string>
 </resources>

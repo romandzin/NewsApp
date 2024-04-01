@@ -11,12 +11,16 @@ interface HeadLinesView: MvpView {
 
     fun tabSelected(category: String)
 
-    fun initView()
+    fun refreshView()
 
     fun setSelectedTab(index: Int)
 
     fun displayNewsList(newsList: ArrayList<Article>)
 
     fun showError(errorText: String)
+
+    fun showLoading()
+
+    fun hideLoading()
 
 }

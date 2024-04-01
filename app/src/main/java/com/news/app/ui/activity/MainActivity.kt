@@ -2,8 +2,8 @@ package com.news.app.ui.activity
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -13,17 +13,18 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.airbnb.lottie.LottieAnimationView
 import com.news.app.R
 import com.news.app.common.Navigator
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
+import com.news.app.ui.fragments.ErrorFragment
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
-import com.news.app.ui.fragments.NewsDetailsFragment
+import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.ui.viewmodels.MainViewModel
+
 
 class MainActivity : AppCompatActivity(), Navigator {
     lateinit var binding: ActivityMainBinding
@@ -31,6 +32,35 @@ class MainActivity : AppCompatActivity(), Navigator {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
     var isBackPressed = false
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            isBackPressed = true
+            val size = supportFragmentManager.backStackEntryCount
+            if (size == 1) finish()
+            else {
+                val previousCurrent =
+                    supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
+                val tagNew = previousCurrent.name
+                val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
+                when (fragmentNew!!::class.java) {
+                    HeadLinesFragment::class.java -> {
+                        binding.bottomNavView.selectedItemId =
+                            R.id.headlines_page
+                    }
+
+                    SourcesFragment::class.java -> {
+                        binding.bottomNavView.selectedItemId = R.id.sources_page
+                    }
+
+                    SavedFragment::class.java -> {
+                        binding.bottomNavView.selectedItemId = R.id.saved_page
+                    }
+                }
+                supportFragmentManager.popBackStack()
+            }
+            isBackPressed = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -39,35 +69,8 @@ class MainActivity : AppCompatActivity(), Navigator {
         setContentView(binding.root)
         onBackPressedDispatcher.addCallback(
             this,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    isBackPressed = true
-                    val size = supportFragmentManager.backStackEntryCount
-                    if (size == 1) finish()
-                    else {
-                        val previousCurrent =
-                            supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
-                        val tagNew = previousCurrent.name
-                        val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
-                        when (fragmentNew!!::class.java) {
-                            HeadLinesFragment::class.java -> {
-                                binding.bottomNavView.selectedItemId =
-                                    R.id.headlines_page
-                            }
-
-                            SourcesFragment::class.java -> {
-                                binding.bottomNavView.selectedItemId = R.id.sources_page
-                            }
-
-                            SavedFragment::class.java -> {
-                                binding.bottomNavView.selectedItemId = R.id.saved_page
-                            }
-                        }
-                        supportFragmentManager.popBackStack()
-                    }
-                    isBackPressed = false
-                }
-            })
+            onBackPressedCallback
+        )
         continueSplashScreenAnimationInActivity(splashScreen)
     }
 
@@ -141,7 +144,17 @@ class MainActivity : AppCompatActivity(), Navigator {
             moveToFragment(FiltersFragment.newInstance(), "filterFragment")
             setNewToolbarState(ToolbarState.Filter)
         }
-        if (!viewModel.isReady) binding.bottomNavView.selectedItemId = R.id.headlines_page
+        if (!viewModel.isReady && isInternetConnectionEnable()) binding.bottomNavView.selectedItemId =
+            R.id.headlines_page
+        else {
+            moveToFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+        }
+    }
+
+    private fun isInternetConnectionEnable(): Boolean {
+        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        return netInfo != null && netInfo.isConnectedOrConnecting
     }
 
     override fun onResume() {

@@ -1,7 +1,6 @@
 package com.news.app.ui.presenters
 
 import android.annotation.SuppressLint
-import com.news.app.data.RepositoryImpl
 import com.news.app.domain.Repository
 import com.news.app.ui.di.common.DaggerRepositoryComponent
 import com.news.app.ui.moxy.views.HeadLinesView
@@ -24,7 +23,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         super.attachView(view)
     }
 
-    fun initView() {
+    fun refreshView() {
         when (category) {
             "general" -> viewState.setSelectedTab(0)
             "business" -> viewState.setSelectedTab(1)
@@ -34,12 +33,14 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     @SuppressLint("CheckResult")
     fun tabSelected(selectedCategory: String) {
+        viewState.showLoading()
         category = selectedCategory
         dataRepository.getHeadlinesNews(selectedCategory)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { response ->
                 viewState.displayNewsList(response.articles)
+                viewState.hideLoading()
             }
     }
 
