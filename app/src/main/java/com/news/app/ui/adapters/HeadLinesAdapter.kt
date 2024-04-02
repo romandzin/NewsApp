@@ -1,5 +1,6 @@
 package com.news.app.ui.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +12,11 @@ import com.news.app.R
 import com.news.app.common.Navigator
 import com.news.app.data.model.Article
 import com.news.app.ui.fragments.NewsDetailsFragment
+import com.squareup.picasso.Picasso
 
-class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigator): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
+class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigator, val context: Context): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
 
+    val iconsArray = arrayListOf(R.drawable.ic_bbc, R.drawable.ic_bloomberg, R.drawable.ic_cnn, R.drawable.ic_new_york_times, R.drawable.ic_daily_mail)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlinesViewHolder {
         val view: View =
             LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false)
@@ -59,6 +62,25 @@ class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigat
         fun bindData(news: Article) {
             channelNameTextView.text = news.source.name
             newsTextView.text = news.newsTitle
+            if (news.newsIcon == null) loadPhoto("https://placebear.com/640/360")
+            else loadPhoto(news.newsIcon)
+            if (adapterPosition > 4) loadPhoto(R.drawable.ic_bbc)
+            else {
+                loadPhoto(iconsArray[adapterPosition])
+            }
+
+        }
+
+        private fun loadPhoto(icon: Int) {
+            Picasso.with(context)
+                .load(icon)
+                .into(channelImageView)
+        }
+
+        private fun loadPhoto(icon: String) {
+            Picasso.with(context)
+                .load(icon)
+                .into(newsImageView)
         }
     }
 

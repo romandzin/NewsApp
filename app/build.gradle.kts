@@ -80,4 +80,6 @@ dependencies {
     kapt("com.google.dagger:dagger-compiler:2.51")
 
     implementation("androidx.room:room-rxjava3:2.6.1")
+
+    implementation("com.squareup.picasso:picasso:2.5.2")
 }

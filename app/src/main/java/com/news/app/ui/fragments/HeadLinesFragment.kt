@@ -63,7 +63,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     private fun setAdapter() {
-        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity)
+        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity, requireContext())
         binding.newsRecyclerView.adapter = headLinesAdapter
     }
 
