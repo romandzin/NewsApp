@@ -3,22 +3,26 @@ package com.news.app.ui.fragments
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.OnScrollChangeListener
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.tabs.TabLayout
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
 import com.news.app.ui.activity.MainActivity
+import com.news.app.ui.activity.SEARCH_ENABLED
+import com.news.app.ui.activity.SEARCH_ENABLED_KEY
+import com.news.app.ui.activity.SEARCH_TEXT
+import com.news.app.ui.activity.SEARCH_TEXT_ENTERED_KEY
 import com.news.app.ui.adapters.HeadLinesAdapter
 import com.news.app.ui.moxy.MvpAppCompatFragment
 import com.news.app.ui.moxy.views.HeadLinesView
 import com.news.app.ui.presenters.HeadlinesPresenter
 import moxy.presenter.InjectPresenter
+import java.util.Locale
+
 
 class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
@@ -50,8 +54,34 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
                 headlinesPresenter.scrolledToEnd()
             }
         }
+        setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
+            if (bundle.getBoolean(SEARCH_ENABLED)) {
+                setSearchModeToFragment()
+            }
+            else disableSearchMode()
+        }
         refreshView()
         return binding.root
+    }
+
+    private fun disableSearchMode() {
+        displayNewsList(arrayListOf())
+        headlinesPresenter.searchModeDisabled()
+        headLinesAdapter.disableSearchMode()
+        binding.tabLayout.isVisible = true
+        binding.paginationProgressBar.isVisible = true
+        headlinesPresenter.refreshView()
+    }
+
+    private fun setSearchModeToFragment() {
+        headlinesPresenter.searchModeEnabled()
+        headLinesAdapter.setSearchMode()
+        binding.tabLayout.isVisible = false
+        binding.paginationProgressBar.isVisible = false
+        displayNewsList(arrayListOf())
+        setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
+            headlinesPresenter.filter(bundle.getString(SEARCH_TEXT) ?: "")
+        }
     }
 
     private fun setTabByCategory() {
@@ -63,8 +93,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     private fun setAdapter() {
-        headLinesAdapter = HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity, requireContext())
+        headLinesAdapter =
+            HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity, requireContext())
         binding.newsRecyclerView.adapter = headLinesAdapter
+    }
+
+    fun setFilteredText(text: String) { //TODO добавить setFragmentResult и получать текст
+        headlinesPresenter.filter(text)
     }
 
     override fun tabSelected(category: String) {

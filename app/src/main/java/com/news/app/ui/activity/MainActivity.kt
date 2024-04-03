@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.R
 import com.news.app.common.Navigator
@@ -25,38 +28,55 @@ import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.ui.viewmodels.MainViewModel
 
-
+const val SEARCH_ENABLED_KEY = "searchKey"
+const val SEARCH_ENABLED = "searchEnable"
+const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
+const val SEARCH_TEXT = "searchText"
 class MainActivity : AppCompatActivity(), Navigator {
     lateinit var binding: ActivityMainBinding
     val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
+    var searching = false
     var isBackPressed = false
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             isBackPressed = true
             val size = supportFragmentManager.backStackEntryCount
-            if (size == 1) finish()
+            if (searching) { //TODO backpressed from searched
+                binding.bottomNavView.selectedItemId =
+                    R.id.headlines_page
+                searching = false
+                supportFragmentManager.setFragmentResult(
+                    SEARCH_ENABLED_KEY,
+                    bundleOf(
+                        SEARCH_ENABLED to false
+                    )
+                )
+            }
             else {
-                val previousCurrent =
-                    supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
-                val tagNew = previousCurrent.name
-                val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
-                when (fragmentNew!!::class.java) {
-                    HeadLinesFragment::class.java -> {
-                        binding.bottomNavView.selectedItemId =
-                            R.id.headlines_page
-                    }
+                if (size == 1) finish()
+                else {
+                    val previousCurrent =
+                        supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
+                    val tagNew = previousCurrent.name
+                    val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
+                    when (fragmentNew!!::class.java) {
+                        HeadLinesFragment::class.java -> {
+                            binding.bottomNavView.selectedItemId =
+                                R.id.headlines_page
+                        }
 
-                    SourcesFragment::class.java -> {
-                        binding.bottomNavView.selectedItemId = R.id.sources_page
-                    }
+                        SourcesFragment::class.java -> {
+                            binding.bottomNavView.selectedItemId = R.id.sources_page
+                        }
 
-                    SavedFragment::class.java -> {
-                        binding.bottomNavView.selectedItemId = R.id.saved_page
+                        SavedFragment::class.java -> {
+                            binding.bottomNavView.selectedItemId = R.id.saved_page
+                        }
                     }
+                    supportFragmentManager.popBackStack()
                 }
-                supportFragmentManager.popBackStack()
             }
             isBackPressed = false
         }
@@ -143,6 +163,24 @@ class MainActivity : AppCompatActivity(), Navigator {
         binding.toolbar.toolbarDefault.filterButton.setOnClickListener {
             moveToFragment(FiltersFragment.newInstance(), "filterFragment")
             setNewToolbarState(ToolbarState.Filter)
+        }
+        binding.toolbar.toolbarDefault.searchButton.setOnClickListener {
+            searching = true
+            setNewToolbarState(ToolbarState.Search)
+            supportFragmentManager.setFragmentResult(
+                SEARCH_ENABLED_KEY,
+                bundleOf(
+                    SEARCH_ENABLED to true
+                )
+            )
+            binding.toolbar.toolbarSearch.searchEditText.addTextChangedListener { text ->
+                supportFragmentManager.setFragmentResult(
+                    SEARCH_TEXT_ENTERED_KEY,
+                    bundleOf(
+                        SEARCH_TEXT to text.toString()
+                    )
+                )
+            }
         }
         if (!viewModel.isReady && isInternetConnectionEnable()) binding.bottomNavView.selectedItemId =
             R.id.headlines_page

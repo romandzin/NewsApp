@@ -17,6 +17,8 @@ import com.squareup.picasso.Picasso
 class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigator, val context: Context): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
 
     val iconsArray = arrayListOf(R.drawable.ic_bbc, R.drawable.ic_bloomberg, R.drawable.ic_cnn, R.drawable.ic_new_york_times, R.drawable.ic_daily_mail)
+    private var searchMode = false
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlinesViewHolder {
         val view: View =
             LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false)
@@ -28,6 +30,8 @@ class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigat
         holder.itemView.setOnClickListener {
             clickItem(arrayList[position])
         }
+        if (searchMode) holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.main_blue, context.resources.newTheme()))
+        else holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.white, context.resources.newTheme()))
     }
 
     private fun clickItem(article: Article) {
@@ -44,6 +48,14 @@ class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigat
         diffCourses.dispatchUpdatesTo(this)
         arrayList.clear()
         arrayList.addAll(newList)
+    }
+
+    fun setSearchMode() {
+        searchMode = true
+    }
+
+    fun disableSearchMode() {
+        searchMode = false
     }
 
     inner class HeadlinesViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
