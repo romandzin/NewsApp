@@ -13,6 +13,9 @@ interface ApiNewsService {
     @GET("/v2/top-headlines")
     fun getHeadlinesNews(@Query("category") category: String, @Query("pageSize") pageSize: Int, @Query("page") page: Int, @Query("apiKey") apiKey: String = API_KEY): Observable<Response>
 
+    @GET("/v2/everything")
+    fun getFilteredNews(@Query("q") q: String = "all", @Query("from") from: String, @Query("to") to: String, @Query("language") language: String, @Query("sortBy") sortBy: String, @Query("pageSize") pageSize: Int, @Query("page") page: Int, @Query("apiKey") apiKey: String = API_KEY): Observable<Response>
+
     @GET("/v2/top-headlines/sources?apiKey=$API_KEY")
     fun getSources(): Call<ArrayList<Source>>
 }

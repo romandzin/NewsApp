@@ -20,6 +20,7 @@ import com.news.app.R
 import com.news.app.common.Navigator
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
+import com.news.app.ui.fragments.APPLY_FILTERS_KEY
 import com.news.app.ui.fragments.ErrorFragment
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
@@ -32,6 +33,7 @@ const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
 const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
 const val SEARCH_TEXT = "searchText"
+
 class MainActivity : AppCompatActivity(), Navigator {
     lateinit var binding: ActivityMainBinding
     val viewModel: MainViewModel by lazy {
@@ -53,8 +55,7 @@ class MainActivity : AppCompatActivity(), Navigator {
                         SEARCH_ENABLED to false
                     )
                 )
-            }
-            else {
+            } else {
                 if (size == 1) finish()
                 else {
                     val previousCurrent =
@@ -181,6 +182,13 @@ class MainActivity : AppCompatActivity(), Navigator {
                     )
                 )
             }
+        }
+        binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
+            supportFragmentManager.setFragmentResult(
+                APPLY_FILTERS_KEY,
+                bundleOf()
+            )
+            onBackPressedDispatcher.onBackPressed()
         }
         if (!viewModel.isReady && isInternetConnectionEnable()) binding.bottomNavView.selectedItemId =
             R.id.headlines_page

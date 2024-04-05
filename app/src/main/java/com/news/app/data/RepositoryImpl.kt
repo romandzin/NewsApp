@@ -29,6 +29,18 @@ class RepositoryImpl @Inject constructor(
         return newsServiceApi.getHeadlinesNews(category, pageSize, page, apiKey)
     }
 
+    override fun getFilteredNews(
+        from: String,
+        to: String,
+        language: String,
+        sortBy: String,
+        pageSize: Int,
+        page: Int,
+        apiKey: String
+    ): Observable<Response> {
+        return newsServiceApi.getFilteredNews(from = from, to = to, language = language, sortBy = sortBy, pageSize = pageSize, page = page, apiKey = apiKey)
+    }
+
     override fun getSources(): Call<ArrayList<Source>> {
         return newsServiceApi.getSources()
     }

@@ -1,6 +1,7 @@
 package com.news.app.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.tabs.TabLayout
+import com.news.app.common.Extensions.getParcelableCompat
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
 import com.news.app.ui.activity.MainActivity
@@ -17,6 +19,7 @@ import com.news.app.ui.activity.SEARCH_ENABLED_KEY
 import com.news.app.ui.activity.SEARCH_TEXT
 import com.news.app.ui.activity.SEARCH_TEXT_ENTERED_KEY
 import com.news.app.ui.adapters.HeadLinesAdapter
+import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.MvpAppCompatFragment
 import com.news.app.ui.moxy.views.HeadLinesView
 import com.news.app.ui.presenters.HeadlinesPresenter
@@ -59,6 +62,10 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
                 setSearchModeToFragment()
             }
             else disableSearchMode()
+        }
+        setFragmentResultListener(SEND_FILTERS_KEY) { _ , bundle ->
+            headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java))
+            Log.d("tag", bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java).toString())
         }
         refreshView()
         return binding.root

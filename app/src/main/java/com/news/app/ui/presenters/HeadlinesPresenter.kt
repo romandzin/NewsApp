@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.news.app.data.model.Article
 import com.news.app.domain.Repository
 import com.news.app.ui.di.common.DaggerRepositoryComponent
+import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -95,6 +96,18 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
+    private fun getFilteredNews(filters: Filters, subscribeAction: (com.news.app.data.model.Response) -> Unit) {
+        dataRepository.getFilteredNews(filters.dateFrom, filters.dateTo, filters.language, filters.sortByParam, pageSize, page)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { e -> e.printStackTrace() }
+            .subscribe { response ->
+                response.status
+                subscribeAction(response)
+            }
+    }
+
+    @SuppressLint("CheckResult")
     fun getList() {
         dataRepository.getSavedList()
             .subscribeOn(Schedulers.io())
@@ -102,6 +115,13 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             .subscribe { savedList ->
                 viewState.showError(savedList.toString())
             }
+    }
+
+    fun enableFilters(filters: Filters) {
+        getFilteredNews(filters) {response ->
+            viewState.displayNewsList(response.articles)
+            viewState.hideLoading()
+        }
     }
 
 }
