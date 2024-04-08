@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(), Navigator {
         override fun handleOnBackPressed() {
             isBackPressed = true
             val size = supportFragmentManager.backStackEntryCount
-            if (searching) { //TODO backpressed from searched
+            if (searching) {
                 binding.bottomNavView.selectedItemId =
                     R.id.headlines_page
                 searching = false

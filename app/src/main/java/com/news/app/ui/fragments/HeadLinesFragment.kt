@@ -1,7 +1,6 @@
 package com.news.app.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +23,6 @@ import com.news.app.ui.moxy.MvpAppCompatFragment
 import com.news.app.ui.moxy.views.HeadLinesView
 import com.news.app.ui.presenters.HeadlinesPresenter
 import moxy.presenter.InjectPresenter
-import java.util.Locale
 
 
 class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
@@ -50,7 +48,6 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 setTabByCategory()
             }
-
         })
         binding.nestedScrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             if (!(v as NestedScrollView).canScrollVertically(1)) {
@@ -65,30 +62,42 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         }
         setFragmentResultListener(SEND_FILTERS_KEY) { _ , bundle ->
             headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java))
-            Log.d("tag", bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java).toString())
+            setAnotherMode()
         }
-        refreshView()
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshView()
+    }
     private fun disableSearchMode() {
         displayNewsList(arrayListOf())
-        headlinesPresenter.searchModeDisabled()
+        setDefaultMode()
         headLinesAdapter.disableSearchMode()
-        binding.tabLayout.isVisible = true
-        binding.paginationProgressBar.isVisible = true
+        //setPaginationModeToFragment()
         headlinesPresenter.refreshView()
     }
 
     private fun setSearchModeToFragment() {
-        headlinesPresenter.searchModeEnabled()
+        setAnotherMode()
         headLinesAdapter.setSearchMode()
-        binding.tabLayout.isVisible = false
-        binding.paginationProgressBar.isVisible = false
         displayNewsList(arrayListOf())
         setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
             headlinesPresenter.filter(bundle.getString(SEARCH_TEXT) ?: "")
         }
+    }
+
+    private fun setAnotherMode() {
+        headlinesPresenter.searchModeEnabled()
+        binding.tabLayout.isVisible = false
+        binding.paginationProgressBar.isVisible = false
+    }
+
+    override fun setDefaultMode() {
+        headlinesPresenter.searchModeDisabled()
+        binding.tabLayout.isVisible = true
+        binding.paginationProgressBar.isVisible = true
     }
 
     private fun setTabByCategory() {
@@ -138,7 +147,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun hideLoading() {
-        binding.paginationProgressBar.isVisible = true
+        //binding.paginationProgressBar.isVisible = true
         binding.loadingProgressBar.isVisible = false
         binding.newsRecyclerView.isVisible = true
     }

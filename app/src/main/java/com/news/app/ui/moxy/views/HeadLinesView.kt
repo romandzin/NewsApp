@@ -23,4 +23,6 @@ interface HeadLinesView: MvpView {
 
     fun hideLoading()
 
+    fun setDefaultMode()
+
 }

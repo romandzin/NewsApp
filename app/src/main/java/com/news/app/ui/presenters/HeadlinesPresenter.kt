@@ -1,8 +1,6 @@
 package com.news.app.ui.presenters
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.widget.Toast
 import com.news.app.data.model.Article
 import com.news.app.domain.Repository
 import com.news.app.ui.di.common.DaggerRepositoryComponent
@@ -12,15 +10,16 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.InjectViewState
 import moxy.MvpPresenter
-import okhttp3.Response
 import java.util.Locale
 import javax.inject.Inject
 
 @InjectViewState
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
-    @Inject lateinit var dataRepository: Repository
+    @Inject
+    lateinit var dataRepository: Repository
     private var category = "general"
-    private var searchMode = false
+    private var isNeedToPaginate = false
+    private var isNeedToRefresh = true
     private var page = 1
     private var pageSize = 8
     private var articles = arrayListOf<Article>()
@@ -34,10 +33,12 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     fun refreshView() {
-        when (category) {
-            "general" -> viewState.setSelectedTab(0)
-            "business" -> viewState.setSelectedTab(1)
-            "technology" -> viewState.setSelectedTab(2)
+        if (isNeedToRefresh) {
+            when (category) {
+                "general" -> viewState.setSelectedTab(0)
+                "business" -> viewState.setSelectedTab(1)
+                "technology" -> viewState.setSelectedTab(2)
+            }
         }
     }
 
@@ -45,7 +46,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         val filteredlist: ArrayList<Article> = ArrayList()
         for (item in articles) {
             // checking if the entered string matched with any item of our recycler view.
-            if (item.newsTitle?.lowercase()?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()?.contains(text.lowercase(Locale.getDefault())) == true) {
+            if (item.newsTitle?.lowercase()
+                    ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
+                    ?.contains(text.lowercase(Locale.getDefault())) == true
+            ) {
                 // if the item is matched we are
                 // adding it to our filtered list.
                 filteredlist.add(item)
@@ -58,17 +62,19 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         viewState.showLoading()
         category = selectedCategory
         getHeadlinesNews { response ->
-            viewState.displayNewsList(response.articles)
-            articles = response.articles
-            viewState.hideLoading()
+            if (isNeedToRefresh) {
+                viewState.setDefaultMode()
+                viewState.displayNewsList(response.articles)
+                articles = response.articles
+                viewState.hideLoading()
+            }
         }
     }
 
     fun scrolledToEnd() {
-        if (!searchMode) {
+        if (isNeedToPaginate) {
             ++page
             getHeadlinesNews { response ->
-                Log.d("tag", response.articles.toString())
                 articles.addAll(response.articles)
                 viewState.displayNewsList(articles)
                 viewState.hideLoading()
@@ -77,11 +83,13 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     fun searchModeEnabled() {
-        searchMode = true
+        isNeedToPaginate = false
+        isNeedToRefresh = false
     }
 
     fun searchModeDisabled() {
-        searchMode = false
+        isNeedToPaginate = true
+        isNeedToRefresh = true
     }
 
     @SuppressLint("CheckResult")
@@ -96,15 +104,28 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getFilteredNews(filters: Filters, subscribeAction: (com.news.app.data.model.Response) -> Unit) {
-        dataRepository.getFilteredNews(filters.dateFrom, filters.dateTo, filters.language, filters.sortByParam, pageSize, page)
+    private fun getFilteredNews(
+        filters: Filters,
+        subscribeAction: (com.news.app.data.model.Response) -> Unit
+    ) {
+        dataRepository.getFilteredNews(
+            filters.dateFrom,
+            filters.dateTo,
+            filters.language,
+            filters.sortByParam,
+            pageSize,
+            page
+        )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
-            .subscribe { response ->
+            .subscribe({ response ->
                 response.status
                 subscribeAction(response)
-            }
+            },
+                {
+                    viewState.showError("error")
+                })
     }
 
     @SuppressLint("CheckResult")
@@ -118,7 +139,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     fun enableFilters(filters: Filters) {
-        getFilteredNews(filters) {response ->
+        getFilteredNews(filters) { response ->
             viewState.displayNewsList(response.articles)
             viewState.hideLoading()
         }
