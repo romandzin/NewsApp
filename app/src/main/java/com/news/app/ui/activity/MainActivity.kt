@@ -135,6 +135,10 @@ class MainActivity : AppCompatActivity(), Navigator {
     }
 
     private fun initView() {
+        WindowCompat.setDecorFitsSystemWindows(
+            window,
+            false
+        )
         binding.bottomNavView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.headlines_page -> {
@@ -181,6 +185,9 @@ class MainActivity : AppCompatActivity(), Navigator {
                         SEARCH_TEXT to text.toString()
                     )
                 )
+            }
+            binding.toolbar.toolbarSearch.removeTextButton.setOnClickListener {
+                binding.toolbar.toolbarSearch.searchEditText.setText("")
             }
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {

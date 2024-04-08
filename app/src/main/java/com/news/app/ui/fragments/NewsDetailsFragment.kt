@@ -1,5 +1,6 @@
 package com.news.app.ui.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentNewsDetailsBinding
 import com.news.app.ui.di.details.DaggerDetailsComponent
 import com.news.app.ui.viewmodels.DetailsViewModel
+import com.squareup.picasso.Picasso
 import javax.inject.Inject
 
 const val NEWS_KEY = "news_key"
@@ -31,6 +33,7 @@ class NewsDetailsFragment : Fragment() {
             .build()
             .inject(this)
         initButtons()
+        activity?.window?.statusBarColor = Color.TRANSPARENT
         updateIfBundleExists()
         return binding.root
     }
@@ -58,8 +61,17 @@ class NewsDetailsFragment : Fragment() {
         binding.titleText.text = news.newsTitle
         binding.articleSource.text = news.source.name
         binding.articleTime.text = news.publishedAt
+        if (news.newsIcon == null) loadPhoto("https://placebear.com/640/360")
+        else loadPhoto(news.newsIcon)
         if (news.content == null) showNoContentView()
         else binding.articleContent.text = news.content
+    }
+
+    private fun loadPhoto(icon: String) {
+        Picasso.with(context)
+            .load(icon)
+            .fit().centerInside()
+            .into(binding.articleImage)
     }
 
     private fun showNoContentView() {
