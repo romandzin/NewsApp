@@ -82,4 +82,6 @@ dependencies {
     implementation("androidx.room:room-rxjava3:2.6.1")
 
     implementation("com.squareup.picasso:picasso:2.5.2")
+
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
 }

@@ -2,7 +2,6 @@ package com.news.app.ui.activity
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -14,10 +13,10 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.R
 import com.news.app.common.Navigator
+import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
 import com.news.app.ui.fragments.APPLY_FILTERS_KEY
@@ -28,6 +27,7 @@ import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.ui.viewmodels.MainViewModel
+import kotlinx.coroutines.flow.onEach
 
 const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(), Navigator {
     val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
+    private var isInternetEnabled: Boolean = true
     var searching = false
     var isBackPressed = false
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -139,6 +140,7 @@ class MainActivity : AppCompatActivity(), Navigator {
             window,
             false
         )
+        observeInternetConnection()
         binding.bottomNavView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.headlines_page -> {
@@ -191,23 +193,25 @@ class MainActivity : AppCompatActivity(), Navigator {
             }
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
             supportFragmentManager.setFragmentResult(
                 APPLY_FILTERS_KEY,
                 bundleOf()
             )
-            onBackPressedDispatcher.onBackPressed()
         }
-        if (!viewModel.isReady && isInternetConnectionEnable()) binding.bottomNavView.selectedItemId =
+        if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
         else {
-            moveToFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+            moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
         }
     }
 
-    private fun isInternetConnectionEnable(): Boolean {
-        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo = cm.activeNetworkInfo
-        return netInfo != null && netInfo.isConnectedOrConnecting
+    private fun observeInternetConnection() {
+        val connectivityObserver = NetworkConnectivityObserver(applicationContext)
+        connectivityObserver.observe().onEach {
+            isInternetEnabled = it
+            if (!it) moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+        }
     }
 
     override fun onResume() {
@@ -228,6 +232,16 @@ class MainActivity : AppCompatActivity(), Navigator {
             .addToBackStack(nameTag)
             .commit()
         setNewToolbarState(ToolbarState.Gone)
+    }
+
+    private fun moveToErrorFragment(fragment: Fragment, nameTag: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.fragmentContainerView.id, fragment, nameTag)
+            .commit()
+    }
+
+    override fun showError(errorType: Int) {
+        moveToErrorFragment(ErrorFragment.newInstance(errorType), "errorFragment")
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {

@@ -17,7 +17,7 @@ interface HeadLinesView: MvpView {
 
     fun displayNewsList(newsList: ArrayList<Article>)
 
-    fun showError(errorText: String)
+    fun showError(errorText: Int)
 
     fun showLoading()
 

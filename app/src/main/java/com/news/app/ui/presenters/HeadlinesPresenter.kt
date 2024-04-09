@@ -1,13 +1,18 @@
 package com.news.app.ui.presenters
 
 import android.annotation.SuppressLint
+import android.content.Context
+import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.data.model.Article
 import com.news.app.domain.Repository
 import com.news.app.ui.di.common.DaggerRepositoryComponent
+import com.news.app.ui.fragments.ANOTHER_ERROR
+import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.onEach
 import moxy.InjectViewState
 import moxy.MvpPresenter
 import java.util.Locale
@@ -17,6 +22,8 @@ import javax.inject.Inject
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     @Inject
     lateinit var dataRepository: Repository
+
+    //Заинджектить сюда контекст
     private var category = "general"
     private var isNeedToPaginate = false
     private var isNeedToRefresh = true
@@ -24,12 +31,21 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private var pageSize = 8
     private var articles = arrayListOf<Article>()
 
+
     override fun attachView(view: HeadLinesView?) {
         DaggerRepositoryComponent
             .builder()
             .build()
             .inject(this)
         super.attachView(view)
+    }
+
+    fun observeInternetConnection(applicationContext: Context) {
+        val connectivityObserver = NetworkConnectivityObserver(applicationContext)
+        connectivityObserver.observe().onEach {
+            if (!it) //moveToFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+                viewState.showError(NO_INTERNET_ERROR)
+        }
     }
 
     fun refreshView() {
@@ -98,9 +114,12 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
-            .subscribe { response ->
+            .subscribe({ response ->
                 subscribeAction(response)
-            }
+            },
+                {
+                viewState.showError(ANOTHER_ERROR)
+                })
     }
 
     @SuppressLint("CheckResult")
@@ -124,7 +143,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 subscribeAction(response)
             },
                 {
-                    viewState.showError("error")
+                    viewState.showError(ANOTHER_ERROR)
                 })
     }
 
@@ -134,7 +153,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { savedList ->
-                viewState.showError(savedList.toString())
+                viewState.showError(ANOTHER_ERROR)
             }
     }
 

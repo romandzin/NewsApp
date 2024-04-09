@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.tabs.TabLayout
 import com.news.app.common.Extensions.getParcelableCompat
+import com.news.app.common.Navigator
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
 import com.news.app.ui.activity.MainActivity
@@ -31,6 +31,9 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     lateinit var headlinesPresenter: HeadlinesPresenter
     private lateinit var binding: FragmentHeadLinesBinding
     private lateinit var headLinesAdapter: HeadLinesAdapter
+    private val navigator by lazy {
+        requireActivity() as Navigator
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -136,8 +139,8 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)
     }
 
-    override fun showError(errorText: String) {
-        Toast.makeText(requireContext(), errorText, Toast.LENGTH_LONG).show()
+    override fun showError(errorText: Int) {
+        navigator.showError(ANOTHER_ERROR)
     }
 
     override fun showLoading() {
