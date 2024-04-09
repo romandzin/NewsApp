@@ -1,9 +1,14 @@
 package com.news.app.ui.presenters
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
+import android.util.Log
+import com.news.app.common.MainApp
 import com.news.app.common.NetworkConnectivityObserver
+import com.news.app.core.AppDependenciesProvider
 import com.news.app.data.model.Article
+import com.news.app.data.model.ArticleDbEntity
 import com.news.app.domain.Repository
 import com.news.app.ui.di.common.DaggerRepositoryComponent
 import com.news.app.ui.fragments.ANOTHER_ERROR
@@ -11,6 +16,7 @@ import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.onEach
 import moxy.InjectViewState
@@ -20,9 +26,8 @@ import javax.inject.Inject
 
 @InjectViewState
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
-    @Inject
-    lateinit var dataRepository: Repository
 
+    lateinit var dataRepository: Repository
     //Заинджектить сюда контекст
     private var category = "general"
     private var isNeedToPaginate = false
@@ -32,12 +37,9 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private var articles = arrayListOf<Article>()
 
 
-    override fun attachView(view: HeadLinesView?) {
-        DaggerRepositoryComponent
-            .builder()
-            .build()
-            .inject(this)
-        super.attachView(view)
+    fun init(appDependencies: AppDependenciesProvider) {
+        dataRepository = appDependencies.provideRepository()
+        getList()
     }
 
     fun observeInternetConnection(applicationContext: Context) {
@@ -152,8 +154,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         dataRepository.getSavedList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { savedList ->
-                viewState.showError(ANOTHER_ERROR)
+            .subscribe {
+                Consumer<List<ArticleDbEntity>> { savedList ->
+                    Log.d("tag", savedList.toString())
+                }
             }
     }
 

@@ -10,6 +10,7 @@ import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.tabs.TabLayout
 import com.news.app.common.Extensions.getParcelableCompat
 import com.news.app.common.Navigator
+import com.news.app.core.App
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
 import com.news.app.ui.activity.MainActivity
@@ -40,6 +41,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHeadLinesBinding.inflate(layoutInflater)
+        headlinesPresenter.init((requireActivity().application as App).provideAppDependenciesProvider())
         setAdapter()
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {

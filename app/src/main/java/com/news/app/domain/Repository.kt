@@ -1,9 +1,12 @@
 package com.news.app.domain
 
+import com.news.app.data.db.DbObject
 import com.news.app.data.model.Article
+import com.news.app.data.model.ArticleDbEntity
 import com.news.app.data.model.Response
 import com.news.app.data.model.Source
 import com.news.app.data.retrofit.API_KEY
+import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.Call
 import retrofit2.http.GET
@@ -17,6 +20,6 @@ interface Repository {
 
     fun getSources(): Call<ArrayList<Source>>
 
-    fun getSavedList(): Observable<ArrayList<Article>>
+    fun getSavedList(): Flowable<ArrayList<Article>>
 
 }

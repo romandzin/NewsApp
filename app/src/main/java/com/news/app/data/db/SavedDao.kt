@@ -15,7 +15,7 @@ interface SavedDao {
     fun insertNewArticle(articleDbEntity: ArticleDbEntity)
 
     @Query("SELECT * FROM saved_articles")
-    fun getAllArticles(): Observable<List<ArticleDbEntity>>
+    fun getAllArticles(): Flowable<List<ArticleDbEntity>>
 
     @Delete
     fun deleteArticle(articleDbEntity: ArticleDbEntity)
