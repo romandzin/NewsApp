@@ -10,9 +10,9 @@ import retrofit2.Call
 
 interface Repository {
 
-    fun getHeadlinesNews(category: String, pageSize: Int, page: Int, apiKey: String = API_KEY): Observable<Response>
+    fun getHeadlinesNews(category: String, pageSize: Int, page: Int): Observable<Response>
 
-    fun getFilteredNews(from: String, to: String, language: String, sortBy: String, pageSize: Int, page: Int, apiKey: String = API_KEY): Observable<Response>
+    fun getFilteredNews(from: String, to: String, language: String, sortBy: String, pageSize: Int, page: Int): Observable<Response>
 
     fun getSources(): Call<ArrayList<Source>>
 

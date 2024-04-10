@@ -84,4 +84,6 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.5.2")
 
     implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
+
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

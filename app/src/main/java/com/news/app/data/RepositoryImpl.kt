@@ -28,10 +28,9 @@ class RepositoryImpl @Inject constructor(
     override fun getHeadlinesNews(
         category: String,
         pageSize: Int,
-        page: Int,
-        apiKey: String
+        page: Int
     ): Observable<Response> {
-        return newsServiceApi.getHeadlinesNews(category, pageSize, page, apiKey)
+        return newsServiceApi.getHeadlinesNews(category, pageSize, page)
     }
 
     override fun getFilteredNews(
@@ -40,8 +39,7 @@ class RepositoryImpl @Inject constructor(
         language: String,
         sortBy: String,
         pageSize: Int,
-        page: Int,
-        apiKey: String
+        page: Int
     ): Observable<Response> {
         return newsServiceApi.getFilteredNews(
             from = from,
@@ -49,8 +47,7 @@ class RepositoryImpl @Inject constructor(
             language = language,
             sortBy = sortBy,
             pageSize = pageSize,
-            page = page,
-            apiKey = apiKey
+            page = page
         )
     }
 

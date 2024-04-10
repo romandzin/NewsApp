@@ -35,6 +35,10 @@ class SavedFragment : Fragment() {
         savedViewModel.savedList.observe(viewLifecycleOwner) { articlesList ->
             setAdapter(articlesList)
             hideLoading()
+            binding.refreshLayout.isRefreshing = false
+        }
+        binding.refreshLayout.setOnRefreshListener {
+            initFragment()
         }
         savedViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
         showLoading()

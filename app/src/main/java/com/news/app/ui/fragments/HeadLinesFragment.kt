@@ -59,6 +59,10 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
                 headlinesPresenter.scrolledToEnd()
             }
         }
+        binding.refreshLayout.setOnRefreshListener {
+            binding.refreshLayout.isRefreshing = false
+            headlinesPresenter.refreshView()
+        }
         setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
             if (bundle.getBoolean(SEARCH_ENABLED)) {
                 setSearchModeToFragment()
