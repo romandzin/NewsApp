@@ -39,7 +39,6 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     fun init(appDependencies: AppDependenciesProvider) {
         dataRepository = appDependencies.provideRepository()
-        getList()
     }
 
     fun observeInternetConnection(applicationContext: Context) {
@@ -147,18 +146,6 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     viewState.showError(ANOTHER_ERROR)
                 })
-    }
-
-    @SuppressLint("CheckResult")
-    fun getList() {
-        dataRepository.getSavedList()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Consumer<List<ArticleDbEntity>> { savedList ->
-                    Log.d("tag", savedList.toString())
-                }
-            }
     }
 
     fun enableFilters(filters: Filters) {

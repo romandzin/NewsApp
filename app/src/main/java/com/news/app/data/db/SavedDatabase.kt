@@ -1,5 +1,6 @@
 package com.news.app.data.db
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.news.app.data.model.ArticleDbEntity
@@ -8,7 +9,7 @@ import com.news.app.data.model.ArticleDbEntity
     version = 1,
     entities = [
         ArticleDbEntity::class
-    ]
+    ],
 )
 abstract class SavedDatabase : RoomDatabase() {
 

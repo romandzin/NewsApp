@@ -6,13 +6,22 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.compose.runtime.DisposableEffect
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.news.app.R
 import com.news.app.common.Extensions.getParcelableCompat
+import com.news.app.core.App
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentNewsDetailsBinding
 import com.news.app.ui.di.details.DaggerDetailsComponent
 import com.news.app.ui.viewmodels.DetailsViewModel
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 const val NEWS_KEY = "news_key"
@@ -33,14 +42,26 @@ class NewsDetailsFragment : Fragment() {
             .build()
             .inject(this)
         initButtons()
+        detailsViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
         activity?.window?.statusBarColor = Color.TRANSPARENT
         updateIfBundleExists()
         return binding.root
     }
 
     private fun updateIfBundleExists() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                detailsViewModel.saved.collect { saved ->
+                    if (saved) binding.bookmarkButton.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_saved_bookmark, resources.newTheme()))
+                    else binding.bookmarkButton.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_saved, resources.newTheme()))
+                }
+            }
+        }
         val bundleData = getBundleData()
-        if (bundleData != null) setDataToUI(bundleData)
+        if (bundleData != null) {
+            detailsViewModel.uiUpdated(bundleData)
+            setDataToUI(bundleData)
+        }
     }
 
     private fun initButtons() {

@@ -11,6 +11,7 @@ class DbObject @Inject constructor(
 
     val appDatabase: SavedDatabase by lazy {
         Room.databaseBuilder(applicationContext, SavedDatabase::class.java, "saved_articles")
+            .fallbackToDestructiveMigration()
             .build()
     }
 }

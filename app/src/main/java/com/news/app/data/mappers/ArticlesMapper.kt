@@ -5,7 +5,7 @@ import com.news.app.data.model.ArticleDbEntity
 import com.news.app.data.model.Source
 import javax.inject.Inject
 
-class ArticleDbToArticleMapper @Inject constructor() {
+class ArticlesMapper @Inject constructor() {
 
     fun transform(dbElement: ArticleDbEntity): Article {
         return Article(
@@ -14,6 +14,17 @@ class ArticleDbToArticleMapper @Inject constructor() {
             dbElement.newsIcon,
             dbElement.publishedAt,
             dbElement.content
+        )
+    }
+
+    fun transform(article: Article, savedDate: String): ArticleDbEntity {
+        return ArticleDbEntity(
+            newsTitle = article.newsTitle!!,
+            newsIcon = article.newsIcon,
+            publishedAt = article.publishedAt,
+            content = article.content,
+            savedDate = savedDate,
+            sourceName = article.source.name
         )
     }
 }
