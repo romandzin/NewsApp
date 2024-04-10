@@ -193,11 +193,17 @@ class MainActivity : AppCompatActivity(), Navigator {
             }
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+            goBack()
             supportFragmentManager.setFragmentResult(
                 APPLY_FILTERS_KEY,
                 bundleOf()
             )
+        }
+        binding.toolbar.toolbarSearch.backButton.setOnClickListener {
+            goBack()
+        }
+        binding.toolbar.toolbarFilter.backButton.setOnClickListener {
+            goBack()
         }
         if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
@@ -242,6 +248,10 @@ class MainActivity : AppCompatActivity(), Navigator {
 
     override fun showError(errorType: Int) {
         moveToErrorFragment(ErrorFragment.newInstance(errorType), "errorFragment")
+    }
+
+    override fun goBack() {
+        onBackPressedDispatcher.onBackPressed()
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {

@@ -9,7 +9,7 @@ class ArticlesMapper @Inject constructor() {
 
     fun transform(dbElement: ArticleDbEntity): Article {
         return Article(
-            Source("123", "Google"),
+            Source("someId", dbElement.sourceName),
             dbElement.newsTitle,
             dbElement.newsIcon,
             dbElement.publishedAt,

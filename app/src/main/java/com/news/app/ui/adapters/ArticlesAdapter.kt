@@ -14,7 +14,7 @@ import com.news.app.data.model.Article
 import com.news.app.ui.fragments.NewsDetailsFragment
 import com.squareup.picasso.Picasso
 
-class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigator, val context: Context): RecyclerView.Adapter<HeadLinesAdapter.HeadlinesViewHolder>() {
+class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: Navigator, val context: Context): RecyclerView.Adapter<ArticlesAdapter.HeadlinesViewHolder>() {
 
     val iconsArray = arrayListOf(R.drawable.ic_bbc, R.drawable.ic_bloomberg, R.drawable.ic_cnn, R.drawable.ic_new_york_times, R.drawable.ic_daily_mail)
     private var searchMode = false
@@ -76,12 +76,37 @@ class HeadLinesAdapter(var arrayList: ArrayList<Article>, val navigator: Navigat
             newsTextView.text = news.newsTitle
             if (news.newsIcon == null) loadPhoto("https://placebear.com/640/360")
             else loadPhoto(news.newsIcon)
-            if (adapterPosition > 4) loadPhoto(R.drawable.ic_bbc)
-            else {
-                loadPhoto(iconsArray[adapterPosition])
-            }
-
+            setSourceIcon(news)
         }
+
+        private fun setSourceIcon(news: Article) {
+            when (news.source.name) {
+                "BBC" -> {
+                    loadPhoto(iconsArray[0])
+                }
+
+                "Bloomberg" -> {
+                    loadPhoto(iconsArray[1])
+                }
+
+                "CNN" -> {
+                    loadPhoto(iconsArray[2])
+                }
+
+                "The New York Times" -> {
+                    loadPhoto(iconsArray[3])
+                }
+
+                "Daily Mail" -> {
+                    loadPhoto(iconsArray[4])
+                }
+
+                else -> {
+                    loadPhoto(R.drawable.ic_fox_news)
+                }
+            }
+        }
+
 
         private fun loadPhoto(icon: Int) {
             Picasso.with(context)

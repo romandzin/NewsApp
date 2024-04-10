@@ -18,7 +18,7 @@ import com.news.app.ui.activity.SEARCH_ENABLED
 import com.news.app.ui.activity.SEARCH_ENABLED_KEY
 import com.news.app.ui.activity.SEARCH_TEXT
 import com.news.app.ui.activity.SEARCH_TEXT_ENTERED_KEY
-import com.news.app.ui.adapters.HeadLinesAdapter
+import com.news.app.ui.adapters.ArticlesAdapter
 import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.MvpAppCompatFragment
 import com.news.app.ui.moxy.views.HeadLinesView
@@ -31,7 +31,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     @InjectPresenter
     lateinit var headlinesPresenter: HeadlinesPresenter
     private lateinit var binding: FragmentHeadLinesBinding
-    private lateinit var headLinesAdapter: HeadLinesAdapter
+    private lateinit var articlesAdapter: ArticlesAdapter
     private val navigator by lazy {
         requireActivity() as Navigator
     }
@@ -79,14 +79,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     private fun disableSearchMode() {
         displayNewsList(arrayListOf())
         setDefaultMode()
-        headLinesAdapter.disableSearchMode()
-        //setPaginationModeToFragment()
+        articlesAdapter.disableSearchMode()
         headlinesPresenter.refreshView()
     }
 
     private fun setSearchModeToFragment() {
         setAnotherMode()
-        headLinesAdapter.setSearchMode()
+        articlesAdapter.setSearchMode()
         displayNewsList(arrayListOf())
         setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
             headlinesPresenter.filter(bundle.getString(SEARCH_TEXT) ?: "")
@@ -114,13 +113,9 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     private fun setAdapter() {
-        headLinesAdapter =
-            HeadLinesAdapter(arrayListOf(), requireActivity() as MainActivity, requireContext())
-        binding.newsRecyclerView.adapter = headLinesAdapter
-    }
-
-    fun setFilteredText(text: String) { //TODO добавить setFragmentResult и получать текст
-        headlinesPresenter.filter(text)
+        articlesAdapter =
+            ArticlesAdapter(arrayListOf(), requireActivity() as MainActivity, requireContext())
+        binding.newsRecyclerView.adapter = articlesAdapter
     }
 
     override fun tabSelected(category: String) {
@@ -129,7 +124,6 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
     override fun refreshView() {
         headlinesPresenter.refreshView()
-        //headlinesPresenter.getList()
     }
 
     override fun setSelectedTab(index: Int) {
@@ -138,7 +132,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun displayNewsList(newsList: ArrayList<Article>) {
-        headLinesAdapter.setData(headLinesAdapter.arrayList, newsList)
+        articlesAdapter.setData(articlesAdapter.arrayList, newsList)
     }
 
     override fun showError(errorText: Int) {
@@ -152,7 +146,6 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun hideLoading() {
-        //binding.paginationProgressBar.isVisible = true
         binding.loadingProgressBar.isVisible = false
         binding.newsRecyclerView.isVisible = true
     }

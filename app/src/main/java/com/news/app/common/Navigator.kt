@@ -6,4 +6,6 @@ interface Navigator {
     fun moveToDetailsFragment(fragment: Fragment, nameTag: String)
 
     fun showError(errorType: Int)
+
+    fun goBack()
 }

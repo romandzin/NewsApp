@@ -6,14 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import com.news.app.R
 import com.news.app.core.App
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentSavedBinding
 import com.news.app.ui.activity.MainActivity
-import com.news.app.ui.adapters.HeadLinesAdapter
+import com.news.app.ui.adapters.ArticlesAdapter
 import com.news.app.ui.viewmodels.SavedViewModel
 
 
@@ -43,9 +41,9 @@ class SavedFragment : Fragment() {
     }
 
     private fun setAdapter(articlesList: ArrayList<Article>) {
-        val headLinesAdapter =
-            HeadLinesAdapter(articlesList, requireActivity() as MainActivity, requireContext())
-        binding.newsRecyclerView.adapter = headLinesAdapter
+        val articlesAdapter =
+            ArticlesAdapter(articlesList, requireActivity() as MainActivity, requireContext())
+        binding.newsRecyclerView.adapter = articlesAdapter
     }
 
     private fun showLoading() {

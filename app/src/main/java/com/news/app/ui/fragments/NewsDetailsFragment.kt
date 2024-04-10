@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.news.app.R
 import com.news.app.common.Extensions.getParcelableCompat
+import com.news.app.common.Navigator
 import com.news.app.core.App
 import com.news.app.data.model.Article
 import com.news.app.databinding.FragmentNewsDetailsBinding
@@ -31,6 +32,9 @@ class NewsDetailsFragment : Fragment() {
     @Inject
     lateinit var detailsViewModel: DetailsViewModel
     private lateinit var binding: FragmentNewsDetailsBinding
+    private val navigator by lazy {
+        requireActivity() as Navigator
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,6 +71,9 @@ class NewsDetailsFragment : Fragment() {
     private fun initButtons() {
         binding.bookmarkButton.setOnClickListener {
             detailsViewModel.bookmarkButtonClicked()
+        }
+        binding.backButton.setOnClickListener {
+            navigator.goBack()
         }
     }
 
