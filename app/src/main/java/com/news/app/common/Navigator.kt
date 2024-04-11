@@ -8,4 +8,6 @@ interface Navigator {
     fun showError(errorType: Int)
 
     fun goBack()
+
+    fun moveToHeadlinesBySource(sourceCategory: String)
 }

@@ -25,7 +25,7 @@ import com.news.app.ui.moxy.views.HeadLinesView
 import com.news.app.ui.presenters.HeadlinesPresenter
 import moxy.presenter.InjectPresenter
 
-
+const val SOURCE_KEY = "source_key"
 class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
     @InjectPresenter
@@ -80,6 +80,8 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         super.onResume()
         refreshView()
     }
+
+
     private fun disableSearchMode() {
         displayNewsList(arrayListOf())
         setDefaultMode()
@@ -154,4 +156,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         binding.newsRecyclerView.isVisible = true
     }
 
+    companion object {
+
+        fun newInstance(category: String) =
+            HeadLinesFragment().apply {
+                arguments = Bundle().apply {
+                    putString(SOURCE_KEY, category)
+                }
+            }
+    }
 }

@@ -2,10 +2,10 @@ package com.news.app.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Response(
+data class SourcesResponse(
     @SerializedName("status")
     val status: String,
 
-    @SerializedName("articles")
-    val articles: ArrayList<Article>
+    @SerializedName("sources")
+    val sourcesList: ArrayList<Source>
 )

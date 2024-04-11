@@ -1,28 +1,21 @@
 package com.news.app.ui.presenters
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
-import android.util.Log
-import com.news.app.common.MainApp
 import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.core.AppDependenciesProvider
 import com.news.app.data.model.Article
-import com.news.app.data.model.ArticleDbEntity
 import com.news.app.domain.Repository
-import com.news.app.ui.di.common.DaggerRepositoryComponent
 import com.news.app.ui.fragments.ANOTHER_ERROR
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.onEach
 import moxy.InjectViewState
 import moxy.MvpPresenter
 import java.util.Locale
-import javax.inject.Inject
 
 @InjectViewState
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
@@ -110,7 +103,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNews(subscribeAction: (com.news.app.data.model.Response) -> Unit) {
+    private fun getHeadlinesNews(subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
         dataRepository.getHeadlinesNews(category, pageSize, page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -124,9 +117,23 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
+    private fun getHeadlinesNewsWithSource(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+        dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { e -> e.printStackTrace() }
+            .subscribe({ response ->
+                subscribeAction(response)
+            },
+                {
+                    viewState.showError(ANOTHER_ERROR)
+                })
+    }
+
+    @SuppressLint("CheckResult")
     private fun getFilteredNews(
         filters: Filters,
-        subscribeAction: (com.news.app.data.model.Response) -> Unit
+        subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit
     ) {
         dataRepository.getFilteredNews(
             filters.dateFrom,

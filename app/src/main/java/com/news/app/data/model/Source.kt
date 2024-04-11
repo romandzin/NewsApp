@@ -11,5 +11,17 @@ data class Source(
     val id: String?,
 
     @SerializedName("name")
-    val name: String?
-): Parcelable
+    val name: String?,
+
+    @SerializedName("url")
+    val url: String? = "",
+
+    @SerializedName("category")
+    val category: String? = "",
+
+    @SerializedName("language")
+    val language: String? = "",
+
+    @SerializedName("country")
+    val country: String? = "",
+) : Parcelable

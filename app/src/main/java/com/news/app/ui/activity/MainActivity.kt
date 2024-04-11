@@ -254,6 +254,13 @@ class MainActivity : AppCompatActivity(), Navigator {
         onBackPressedDispatcher.onBackPressed()
     }
 
+    override fun moveToHeadlinesBySource(sourceCategory: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.fragmentContainerView.id, HeadLinesFragment.newInstance(sourceCategory), "headlinesByCategoryFragment")
+            .commit()
+        //TODO ставить нужный toolbar
+    }
+
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {
         when (currentToolbarState) {
             ToolbarState.Filter -> {

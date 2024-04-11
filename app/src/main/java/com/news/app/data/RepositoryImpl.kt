@@ -5,14 +5,13 @@ import android.util.Log
 import com.news.app.data.db.SavedDao
 import com.news.app.data.mappers.ArticlesMapper
 import com.news.app.data.model.Article
-import com.news.app.data.model.Response
+import com.news.app.data.model.ArticlesResponse
 import com.news.app.data.model.Source
 import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.domain.Repository
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import retrofit2.Call
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -29,8 +28,16 @@ class RepositoryImpl @Inject constructor(
         category: String,
         pageSize: Int,
         page: Int
-    ): Observable<Response> {
+    ): Observable<ArticlesResponse> {
         return newsServiceApi.getHeadlinesNews(category, pageSize, page)
+    }
+
+    override fun getHeadlinesNewsWithSource(
+        sourceCategory: String,
+        pageSize: Int,
+        page: Int
+    ): Observable<ArticlesResponse> {
+        return newsServiceApi.getHeadlinesNews(sourceCategory, pageSize, page)
     }
 
     override fun getFilteredNews(
@@ -40,7 +47,7 @@ class RepositoryImpl @Inject constructor(
         sortBy: String,
         pageSize: Int,
         page: Int
-    ): Observable<Response> {
+    ): Observable<ArticlesResponse> {
         return newsServiceApi.getFilteredNews(
             from = from,
             to = to,
@@ -51,8 +58,10 @@ class RepositoryImpl @Inject constructor(
         )
     }
 
-    override fun getSources(): Call<ArrayList<Source>> {
-        return newsServiceApi.getSources()
+    override fun getSources(): Observable<ArrayList<Source>> {
+        return newsServiceApi.getSources().flatMap { sourceResponse ->
+            Observable.fromArray(sourceResponse.sourcesList)
+        }
     }
 
     @SuppressLint("CheckResult")
