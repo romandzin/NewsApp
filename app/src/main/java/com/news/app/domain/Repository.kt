@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.core.Observable
 
 interface Repository {
 
-    fun getHeadlinesNews(category: String, pageSize: Int, page: Int): Observable<ArticlesResponse>
+    fun getHeadlinesNews(category: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
 
     fun getHeadlinesNewsWithSource(sourceCategory: String, pageSize: Int, page: Int): Observable<ArticlesResponse>
 
@@ -21,5 +21,5 @@ interface Repository {
     suspend fun saveArticle(article: Article, savedDate: String)
 
     suspend fun deleteArticle(article: Article)
-
+    fun saveToCache(articlesList: java.util.ArrayList<Article>, page: Int)
 }

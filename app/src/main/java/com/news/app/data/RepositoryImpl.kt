@@ -2,6 +2,7 @@ package com.news.app.data
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.news.app.data.db.CachedDao
 import com.news.app.data.db.SavedDao
 import com.news.app.data.mappers.ArticlesMapper
 import com.news.app.data.model.Article
@@ -21,15 +22,32 @@ import javax.inject.Inject
 class RepositoryImpl @Inject constructor(
     var newsServiceApi: ApiNewsService,
     var savedDao: SavedDao,
+    var cachedDao: CachedDao,
     var articlesMapper: ArticlesMapper
 ) : Repository {
 
+    @SuppressLint("CheckResult")
     override fun getHeadlinesNews(
         category: String,
         pageSize: Int,
         page: Int
-    ): Observable<ArticlesResponse> {
-        return newsServiceApi.getHeadlinesNews(category, pageSize, page)
+    ): Observable<ArrayList<Article>> {
+        return cachedDao.getCachedArticlesByPage(page)
+            .take(1)
+            .flatMap {
+                Log.d("tag", it.toString())
+                if (it.isEmpty()) {
+                    return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
+                        .flatMap { response ->
+                            saveToCache(response.articles, page)
+                            Observable.fromArray(response.articles)
+                        }
+                } else {
+                    val articlesList: ArrayList<Article> =
+                        it.map { articlesMapper.transform(it) } as ArrayList<Article>
+                    return@flatMap Observable.fromArray(articlesList)
+                }
+            }
     }
 
     override fun getHeadlinesNewsWithSource(
@@ -94,5 +112,10 @@ class RepositoryImpl @Inject constructor(
 
     override suspend fun deleteArticle(article: Article) {
         savedDao.deleteArticleByTitle(article.newsTitle!!)
+    }
+
+    override fun saveToCache(articlesList: java.util.ArrayList<Article>, page: Int){
+        for (i in articlesList)
+            cachedDao.insertCacheArticle(articlesMapper.transform(i, page))
     }
 }

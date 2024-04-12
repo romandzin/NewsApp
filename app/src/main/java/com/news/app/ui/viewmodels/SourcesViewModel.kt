@@ -41,6 +41,7 @@ class SourcesViewModel: ViewModel() {
             }
     }
 
+    //TODO добавить кэш
     @SuppressLint("CheckResult")
     private fun getHeadlinesNewsWithSource(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)

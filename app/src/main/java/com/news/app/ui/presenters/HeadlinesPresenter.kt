@@ -12,6 +12,7 @@ import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.onEach
 import moxy.InjectViewState
 import moxy.MvpPresenter
@@ -21,6 +22,7 @@ import java.util.Locale
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     lateinit var dataRepository: Repository
+
     //Заинджектить сюда контекст
     private var category = "general"
     private var isNeedToPaginate = false
@@ -43,6 +45,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     fun refreshView() {
+        page = 1
         if (isNeedToRefresh) {
             when (category) {
                 "general" -> viewState.setSelectedTab(0)
@@ -55,13 +58,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     fun filter(text: String) {
         val filteredlist: ArrayList<Article> = ArrayList()
         for (item in articles) {
-            // checking if the entered string matched with any item of our recycler view.
             if (item.newsTitle?.lowercase()
                     ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
                     ?.contains(text.lowercase(Locale.getDefault())) == true
             ) {
-                // if the item is matched we are
-                // adding it to our filtered list.
                 filteredlist.add(item)
             }
         }
@@ -71,11 +71,11 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     fun tabSelected(selectedCategory: String) {
         viewState.showLoading()
         category = selectedCategory
-        getHeadlinesNews { response ->
+        getHeadlinesNews { articlesList ->
             if (isNeedToRefresh) {
                 viewState.setDefaultMode()
-                viewState.displayNewsList(response.articles)
-                articles = response.articles
+                viewState.displayNewsList(articlesList)
+                articles = articlesList
                 viewState.hideLoading()
             }
         }
@@ -84,8 +84,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     fun scrolledToEnd() {
         if (isNeedToPaginate) {
             ++page
-            getHeadlinesNews { response ->
-                articles.addAll(response.articles)
+            getHeadlinesNews { articlesList ->
+                articles.addAll(articlesList)
                 viewState.displayNewsList(articles)
                 viewState.hideLoading()
             }
@@ -103,29 +103,16 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNews(subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+    private fun getHeadlinesNews(subscribeAction: (ArrayList<Article>) -> Unit) {
         dataRepository.getHeadlinesNews(category, pageSize, page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
-            .subscribe({ response ->
-                subscribeAction(response)
+            .subscribe({ arrayList ->
+                subscribeAction(arrayList)
             },
                 {
-                viewState.showError(ANOTHER_ERROR)
-                })
-    }
-
-    @SuppressLint("CheckResult")
-    private fun getHeadlinesNewsWithSource(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
-        dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnError { e -> e.printStackTrace() }
-            .subscribe({ response ->
-                subscribeAction(response)
-            },
-                {
+                    it.printStackTrace()
                     viewState.showError(ANOTHER_ERROR)
                 })
     }

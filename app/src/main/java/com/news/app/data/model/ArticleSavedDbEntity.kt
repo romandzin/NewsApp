@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "saved_articles")
-data class ArticleDbEntity(
+data class ArticleSavedDbEntity(
 
     @PrimaryKey
     @ColumnInfo("title")

@@ -1,18 +1,21 @@
 package com.news.app.data.db
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.news.app.data.model.ArticleDbEntity
+import com.news.app.data.model.ArticleCacheDbEntity
+import com.news.app.data.model.ArticleSavedDbEntity
 
 @Database(
-    version = 1,
+    version = 3,
     entities = [
-        ArticleDbEntity::class
+        ArticleSavedDbEntity::class,
+        ArticleCacheDbEntity::class
     ],
 )
 abstract class SavedDatabase : RoomDatabase() {
 
     abstract fun getSavedDao(): SavedDao
+
+    abstract fun getCachedDao(): CachedDao
 
 }
