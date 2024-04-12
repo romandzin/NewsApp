@@ -30,14 +30,14 @@ class SourcesAdapter(var arrayList: ArrayList<Source>, val parentFragment: Sourc
     override fun onBindViewHolder(holder: SourcesViewHolder, position: Int) {
         holder.bindData(arrayList[position])
         holder.itemView.setOnClickListener {
-            clickItem(arrayList[position].id!!)
+            clickItem(arrayList[position].id!!, arrayList[position].name!!)
         }
         if (searchMode) holder.itemView.rootView.setBackgroundColor(parentFragment.requireContext().resources.getColor(R.color.main_blue, parentFragment.requireContext().resources.newTheme()))
         else holder.itemView.rootView.setBackgroundColor(parentFragment.requireContext().resources.getColor(R.color.white, parentFragment.requireContext().resources.newTheme()))
     }
 
-    private fun clickItem(source: String) {
-        parentFragment.showArticles(source)
+    private fun clickItem(source: String, name: String) {
+        parentFragment.showArticles(source, name)
     }
 
     override fun getItemCount(): Int {

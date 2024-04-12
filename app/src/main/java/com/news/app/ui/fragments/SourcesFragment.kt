@@ -23,6 +23,10 @@ class SourcesFragment : Fragment() {
     private val sourcesViewModel: SourcesViewModel by lazy {
         ViewModelProvider(this)[SourcesViewModel::class.java]
     }
+    private val navigator by lazy {
+        requireActivity() as Navigator
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,7 +49,8 @@ class SourcesFragment : Fragment() {
         showLoading()
     }
 
-    fun showArticles(source: String) {
+    fun showArticles(source: String, name: String) {
+        navigator.sourcesShowingArticles(name)
         sourcesViewModel.articlesList.observe(viewLifecycleOwner) { sourcesList ->
             setAdapterArticles(sourcesList)
             hideLoading()
@@ -74,5 +79,9 @@ class SourcesFragment : Fragment() {
     private fun hideLoading() {
         binding.sourcesRecyclerView.isVisible = true
         binding.loadingProgressBar.isVisible = false
+    }
+
+    fun goBack() {
+        initFragment()
     }
 }

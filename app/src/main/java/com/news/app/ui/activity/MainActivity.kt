@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), Navigator {
     private var isInternetEnabled: Boolean = true
     var searching = false
     var isBackPressed = false
+    private var isSourcesWithArticle = false
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             isBackPressed = true
@@ -56,6 +57,11 @@ class MainActivity : AppCompatActivity(), Navigator {
                         SEARCH_ENABLED to false
                     )
                 )
+            } else if (isSourcesWithArticle) {
+                val sourcesFragment = supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
+                sourcesFragment.goBack()
+                isSourcesWithArticle = false
+                setNewToolbarState(ToolbarState.Default, "Source")
             } else {
                 if (size == 1) finish()
                 else {
@@ -205,6 +211,9 @@ class MainActivity : AppCompatActivity(), Navigator {
         binding.toolbar.toolbarFilter.backButton.setOnClickListener {
             goBack()
         }
+        binding.toolbar.toolbarSource.backButton.setOnClickListener {
+            goBack()
+        }
         if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
         else {
@@ -216,7 +225,10 @@ class MainActivity : AppCompatActivity(), Navigator {
         val connectivityObserver = NetworkConnectivityObserver(applicationContext)
         connectivityObserver.observe().onEach {
             isInternetEnabled = it
-            if (!it) moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+            if (!it) moveToErrorFragment(
+                ErrorFragment.newInstance(NO_INTERNET_ERROR),
+                "errorFragment"
+            )
         }
     }
 
@@ -254,11 +266,9 @@ class MainActivity : AppCompatActivity(), Navigator {
         onBackPressedDispatcher.onBackPressed()
     }
 
-    override fun moveToHeadlinesBySource(sourceCategory: String) {
-        supportFragmentManager.beginTransaction()
-            .replace(binding.fragmentContainerView.id, HeadLinesFragment.newInstance(sourceCategory), "headlinesByCategoryFragment")
-            .commit()
-        //TODO ставить нужный toolbar
+    override fun sourcesShowingArticles(source: String) {
+        isSourcesWithArticle = true
+        setNewToolbarState(ToolbarState.Sources, source)
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {
@@ -268,6 +278,7 @@ class MainActivity : AppCompatActivity(), Navigator {
                 binding.toolbar.toolbarFilter.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
+                binding.toolbar.toolbarSource.root.visibility = View.GONE
             }
 
             ToolbarState.Search -> {
@@ -275,10 +286,20 @@ class MainActivity : AppCompatActivity(), Navigator {
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.VISIBLE
                 binding.toolbar.toolbarDefault.root.visibility = View.GONE
+                binding.toolbar.toolbarSource.root.visibility = View.GONE
             }
 
             ToolbarState.Gone -> {
                 binding.toolbar.root.visibility = View.GONE
+            }
+
+            ToolbarState.Sources -> {
+                binding.toolbar.root.isVisible = true
+                binding.toolbar.toolbarFilter.root.visibility = View.GONE
+                binding.toolbar.toolbarSearch.root.visibility = View.GONE
+                binding.toolbar.toolbarDefault.root.visibility = View.GONE
+                binding.toolbar.toolbarSource.root.visibility = View.VISIBLE
+                binding.toolbar.toolbarSource.toolbarBaseText.text = toolbarText
             }
 
             else -> {
@@ -286,6 +307,7 @@ class MainActivity : AppCompatActivity(), Navigator {
                 binding.toolbar.toolbarFilter.root.visibility = View.GONE
                 binding.toolbar.toolbarSearch.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.root.visibility = View.VISIBLE
+                binding.toolbar.toolbarSource.root.visibility = View.GONE
                 binding.toolbar.toolbarDefault.toolbarBaseText.text = toolbarText
             }
         }

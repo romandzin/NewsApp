@@ -9,5 +9,5 @@ interface Navigator {
 
     fun goBack()
 
-    fun moveToHeadlinesBySource(sourceCategory: String)
+    fun sourcesShowingArticles(source: String)
 }
