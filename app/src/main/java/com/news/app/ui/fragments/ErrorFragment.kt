@@ -40,6 +40,9 @@ class ErrorFragment : Fragment() {
         errorViewModel.errorTextLiveData.observe(viewLifecycleOwner) { errorText ->
             binding.errorText.text = errorText
         }
+        binding.refreshIcon.setOnClickListener {
+            errorViewModel.refreshButtonClicked(lastFunction)
+        }
         errorViewModel.viewInit(getBundleData())
     }
 
@@ -50,9 +53,11 @@ class ErrorFragment : Fragment() {
 
     companion object {
 
+        var lastFunction: (() -> Unit)? = null
         @JvmStatic
-        fun newInstance(error: Int) =
+        fun newInstance(error: Int, lastFunctionBeforeError: () -> Unit) =
             ErrorFragment().apply {
+                lastFunction = lastFunctionBeforeError
                 arguments = Bundle().apply {
                     putInt(ERROR_TYPE, error)
                 }

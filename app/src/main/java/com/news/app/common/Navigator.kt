@@ -5,9 +5,10 @@ import androidx.fragment.app.Fragment
 interface Navigator {
     fun moveToDetailsFragment(fragment: Fragment, nameTag: String)
 
-    fun showError(errorType: Int)
+    fun showError(errorType: Int, lastFunctionBeforeError: () -> Unit)
 
     fun goBack()
 
     fun sourcesShowingArticles(source: String)
+    fun removeError()
 }

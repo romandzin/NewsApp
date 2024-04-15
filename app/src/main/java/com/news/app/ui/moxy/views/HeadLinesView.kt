@@ -17,12 +17,13 @@ interface HeadLinesView: MvpView {
 
     fun displayNewsList(newsList: ArrayList<Article>)
 
-    fun showError(errorText: Int)
+    fun showError(errorText: Int, lastAction: () -> Unit)
 
     fun showLoading()
 
     fun hideLoading()
 
     fun setDefaultMode()
+    fun removeError()
 
 }

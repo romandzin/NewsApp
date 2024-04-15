@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.common.Navigator
 import com.news.app.core.App
@@ -19,6 +20,7 @@ import com.news.app.ui.activity.SEARCH_TEXT
 import com.news.app.ui.activity.SEARCH_TEXT_ENTERED_KEY
 import com.news.app.ui.adapters.ArticlesAdapter
 import com.news.app.ui.adapters.SourcesAdapter
+import com.news.app.ui.model.InAppError
 import com.news.app.ui.viewmodels.SourcesViewModel
 
 class SourcesFragment : Fragment() {
@@ -40,6 +42,20 @@ class SourcesFragment : Fragment() {
         return binding.root
     }
 
+    private fun observeError() {
+        val errorObserver = Observer<InAppError?> { error ->
+            if (error != null) {
+                navigator.removeError()
+                navigator.showError(error.errorType, error.errorFunction)
+            }
+        }
+        sourcesViewModel.errorState.observe(viewLifecycleOwner, errorObserver)
+        val unShowErrorObserver = Observer<Boolean?> {
+            if (it != null) navigator.removeError()
+        }
+        sourcesViewModel.unshowError.observe(viewLifecycleOwner, unShowErrorObserver)
+    }
+
     private fun initFragment() {
         sourcesViewModel.sourcesList.observe(viewLifecycleOwner) { sourcesList ->
             setAdapter(sourcesList)
@@ -49,13 +65,14 @@ class SourcesFragment : Fragment() {
         binding.refreshLayout.setOnRefreshListener {
             initFragment()
         }
+        observeError()
         setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
             if (bundle.getBoolean(SEARCH_ENABLED)) {
                 setSearchModeToFragment()
             }
             else disableSearchMode()
         }
-        sourcesViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
+        sourcesViewModel.init((requireActivity().application as App).provideAppDependenciesProvider(), requireContext())
         showLoading()
     }
 
@@ -66,7 +83,7 @@ class SourcesFragment : Fragment() {
             hideLoading()
             binding.refreshLayout.isRefreshing = false
         }
-        sourcesViewModel.sourceClicked(source)
+        sourcesViewModel.sourceClicked(source, requireContext())
     }
 
     private fun setAdapter(sourcesList: ArrayList<Source>) {

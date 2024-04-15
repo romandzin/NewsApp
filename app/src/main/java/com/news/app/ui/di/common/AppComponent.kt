@@ -7,7 +7,7 @@ import dagger.BindsInstance
 import dagger.Component
 
 @Component(
-    dependencies = [NetworkProvider::class]
+    dependencies = [NetworkProvider::class],
 )
 interface AppComponent: AppDependenciesProvider {
 
@@ -24,7 +24,7 @@ interface AppComponent: AppDependenciesProvider {
 
         fun create(
             networkProvider: NetworkProvider,
-            @BindsInstance applicationContext: Context
+            @BindsInstance applicationContext: Context,
         ): AppComponent
     }
 }

@@ -26,6 +26,7 @@ import java.util.Locale
 
 const val APPLY_FILTERS_KEY = "applyFiltersKey"
 const val SEND_FILTERS_KEY = "sendFiltersKey"
+const val DISABLE_FILTERS_KEY = "disableFilters"
 const val FILTERS_KEY = "filtersKey"
 class FiltersFragment : Fragment() {
     private lateinit var binding: FragmentFiltersBinding

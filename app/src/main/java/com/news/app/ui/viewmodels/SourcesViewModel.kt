@@ -1,17 +1,25 @@
 package com.news.app.ui.viewmodels
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.core.AppDependenciesProvider
 import com.news.app.data.model.Article
 import com.news.app.data.model.Source
 import com.news.app.domain.Repository
 import com.news.app.ui.fragments.ANOTHER_ERROR
+import com.news.app.ui.fragments.NO_INTERNET_ERROR
+import com.news.app.ui.model.InAppError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.onEach
 import java.util.Locale
 
 class SourcesViewModel: ViewModel() {
@@ -25,26 +33,76 @@ class SourcesViewModel: ViewModel() {
     private var listOfSavedSources: ArrayList<Source> = arrayListOf()
     val sourcesList: LiveData<ArrayList<Source>> = _sourcesList
 
+    private var _errorState = MutableLiveData<InAppError?>()
+    val errorState = _errorState
+
+    private var _unshowError = MutableLiveData<Boolean?>()
+    val unshowError = _unshowError
+
     private val _articlesList = MutableLiveData<ArrayList<Article>>()
     private var listOfSavedArticles: ArrayList<Article> = arrayListOf()
     val articlesList: LiveData<ArrayList<Article>> = _articlesList
 
-    fun init(appDependencies: AppDependenciesProvider) {
+    fun init(appDependencies: AppDependenciesProvider, context: Context) {
         isShowingArticles = false
         dataRepository = appDependencies.provideRepository()
-        getSourcesList()
+        getSourcesList(context)
+    }
+
+    private fun observeInternetConnection(context: Context): Boolean {
+        var result: Boolean
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCapabilities = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+        result = when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
+        return result
     }
 
     @SuppressLint("CheckResult")
-    fun getSourcesList() {
+    fun getSourcesList(context: Context) {
+        val function = {getSourcesListWithError()}
         dataRepository.getSources()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { sourcesList ->
+            .subscribe({ sourcesList ->
                 _sourcesList.value = sourcesList
                 listOfSavedSources.addAll(sourcesList)
                 Log.d("tag", sourcesList.toString())
-            }
+            },
+                {
+                    if (observeInternetConnection(context)) {
+                        it.printStackTrace()
+                        val error = InAppError(ANOTHER_ERROR, function)
+                        _errorState.value = error
+                        _errorState.value = null
+                    }
+                    else {
+                        val error = InAppError(NO_INTERNET_ERROR, function)
+                        _errorState.value = error
+                        _errorState.value = null
+                    }
+                })
+    }
+
+    @SuppressLint("CheckResult")
+    fun getSourcesListWithError() {
+        dataRepository.getSources()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ({ sourcesList ->
+                _unshowError.value = true
+                _unshowError.value = null
+                _sourcesList.value = sourcesList
+                listOfSavedSources.addAll(sourcesList)
+            },
+        {
+            it.printStackTrace()
+        })
     }
 
     //TODO добавить кэш
@@ -76,7 +134,8 @@ class SourcesViewModel: ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNewsWithSource(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+    private fun getHeadlinesNewsWithSource(sourceCategory: String, context: Context, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+        val function = { getHeadlinesNewsWithSourceWithError(sourceCategory, subscribeAction)}
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -85,13 +144,39 @@ class SourcesViewModel: ViewModel() {
                 subscribeAction(response)
             },
                 {
-
+                    if (observeInternetConnection(context)) {
+                        it.printStackTrace()
+                        val error = InAppError(ANOTHER_ERROR, function)
+                        _errorState.value = error
+                        _errorState.value = null
+                    }
+                    else {
+                        val error = InAppError(NO_INTERNET_ERROR, function)
+                        _errorState.value = error
+                        _errorState.value = null
+                    }
                 })
     }
 
-    fun sourceClicked(source: String) {
+    @SuppressLint("CheckResult")
+    private fun getHeadlinesNewsWithSourceWithError(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+        dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { e -> e.printStackTrace() }
+            .subscribe({ response ->
+                _unshowError.value = true
+                _unshowError.value = null
+                subscribeAction(response)
+            },
+                {
+                    it.printStackTrace()
+                })
+    }
+
+    fun sourceClicked(source: String, context: Context) {
         isShowingArticles = true
-        getHeadlinesNewsWithSource(source) { response ->
+        getHeadlinesNewsWithSource(source, context) { response ->
             _articlesList.value = response.articles
             listOfSavedArticles.addAll(response.articles)
             Log.d("tag", response.articles.toString())

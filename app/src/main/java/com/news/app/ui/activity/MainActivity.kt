@@ -20,6 +20,7 @@ import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
 import com.news.app.ui.fragments.APPLY_FILTERS_KEY
+import com.news.app.ui.fragments.DISABLE_FILTERS_KEY
 import com.news.app.ui.fragments.ErrorFragment
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
@@ -53,10 +54,12 @@ class MainActivity : AppCompatActivity(), Navigator {
                         binding.bottomNavView.selectedItemId =
                             R.id.headlines_page
                     }
+
                     SavedFragment::class -> {
                         binding.bottomNavView.selectedItemId =
                             R.id.saved_page
                     }
+
                     SourcesFragment::class -> {
                         binding.bottomNavView.selectedItemId =
                             R.id.sources_page
@@ -70,10 +73,13 @@ class MainActivity : AppCompatActivity(), Navigator {
                     )
                 )
             } else if (isSourcesWithArticle) {
-                val sourcesFragment = supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
+                val sourcesFragment =
+                    supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
                 sourcesFragment.goBack()
                 isSourcesWithArticle = false
                 setNewToolbarState(ToolbarState.Default, "Source")
+            } else if (supportFragmentManager.findFragmentByTag("errorFragment") != null) {
+                removeError()
             } else {
                 if (size == 1) finish()
                 else {
@@ -231,6 +237,10 @@ class MainActivity : AppCompatActivity(), Navigator {
             goBack()
         }
         binding.toolbar.toolbarFilter.backButton.setOnClickListener {
+            supportFragmentManager.setFragmentResult(
+                DISABLE_FILTERS_KEY,
+                bundleOf()
+            )
             goBack()
         }
         binding.toolbar.toolbarSource.backButton.setOnClickListener {
@@ -239,7 +249,7 @@ class MainActivity : AppCompatActivity(), Navigator {
         if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
         else {
-            moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
+            //moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
         }
     }
 
@@ -247,10 +257,6 @@ class MainActivity : AppCompatActivity(), Navigator {
         val connectivityObserver = NetworkConnectivityObserver(applicationContext)
         connectivityObserver.observe().onEach {
             isInternetEnabled = it
-            if (!it) moveToErrorFragment(
-                ErrorFragment.newInstance(NO_INTERNET_ERROR),
-                "errorFragment"
-            )
         }
     }
 
@@ -276,12 +282,15 @@ class MainActivity : AppCompatActivity(), Navigator {
 
     private fun moveToErrorFragment(fragment: Fragment, nameTag: String) {
         supportFragmentManager.beginTransaction()
-            .replace(binding.fragmentContainerView.id, fragment, nameTag)
+            .add(binding.fragmentContainerView.id, fragment, nameTag)
             .commit()
     }
 
-    override fun showError(errorType: Int) {
-        moveToErrorFragment(ErrorFragment.newInstance(errorType), "errorFragment")
+    override fun showError(errorType: Int, lastFunctionBeforeError: () -> Unit) {
+        moveToErrorFragment(
+            ErrorFragment.newInstance(errorType, lastFunctionBeforeError),
+            "errorFragment"
+        )
     }
 
     override fun goBack() {
@@ -291,6 +300,14 @@ class MainActivity : AppCompatActivity(), Navigator {
     override fun sourcesShowingArticles(source: String) {
         isSourcesWithArticle = true
         setNewToolbarState(ToolbarState.Sources, source)
+    }
+
+    override fun removeError() {
+        val errorFragment = supportFragmentManager.findFragmentByTag("errorFragment")
+        if (errorFragment != null)
+            supportFragmentManager.beginTransaction()
+                .remove(errorFragment)
+                .commit()
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {

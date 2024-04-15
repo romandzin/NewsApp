@@ -56,7 +56,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         })
         binding.nestedScrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             if (!(v as NestedScrollView).canScrollVertically(1)) {
-                headlinesPresenter.scrolledToEnd()
+                headlinesPresenter.scrolledToEnd(requireContext())
             }
         }
         binding.refreshLayout.setOnRefreshListener {
@@ -70,8 +70,11 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             else disableSearchMode()
         }
         setFragmentResultListener(SEND_FILTERS_KEY) { _ , bundle ->
-            headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java))
+            headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java), requireContext())
             setAnotherMode()
+        }
+        setFragmentResultListener(DISABLE_FILTERS_KEY) { _, _ ->
+            setDefaultMode()
         }
         return binding.root
     }
@@ -112,6 +115,10 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         binding.paginationProgressBar.isVisible = true
     }
 
+    override fun removeError() {
+        navigator.removeError()
+    }
+
     private fun setTabByCategory() {
         when (binding.tabLayout.selectedTabPosition) {
             0 -> tabSelected("general")
@@ -127,7 +134,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun tabSelected(category: String) {
-        headlinesPresenter.tabSelected(category)
+        headlinesPresenter.tabSelected(category, requireContext())
     }
 
     override fun refreshView() {
@@ -143,8 +150,8 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         articlesAdapter.setData(articlesAdapter.arrayList, newsList)
     }
 
-    override fun showError(errorText: Int) {
-        navigator.showError(ANOTHER_ERROR)
+    override fun showError(errorText: Int, lastAction: () -> Unit) {
+        navigator.showError(ANOTHER_ERROR, lastAction)
     }
 
     override fun showLoading() {
@@ -156,15 +163,5 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     override fun hideLoading() {
         binding.loadingProgressBar.isVisible = false
         binding.newsRecyclerView.isVisible = true
-    }
-
-    companion object {
-
-        fun newInstance(category: String) =
-            HeadLinesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(SOURCE_KEY, category)
-                }
-            }
     }
 }

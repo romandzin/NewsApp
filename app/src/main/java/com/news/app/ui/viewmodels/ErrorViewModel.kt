@@ -23,4 +23,10 @@ class ErrorViewModel: ViewModel() {
             }
         }
     }
+
+    fun refreshButtonClicked(lastFunction: (() -> Unit)?) {
+        if (lastFunction != null) {
+            lastFunction()
+        }
+    }
 }
