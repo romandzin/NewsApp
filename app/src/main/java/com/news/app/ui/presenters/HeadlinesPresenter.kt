@@ -67,7 +67,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             when (category) {
                 "general" -> viewState.setSelectedTab(0)
                 "business" -> viewState.setSelectedTab(1)
-                "technology" -> viewState.setSelectedTab(2)
+                "health" -> viewState.setSelectedTab(2)
             }
         }
     }
@@ -87,11 +87,13 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     fun tabSelected(selectedCategory: String, context: Context) {
         viewState.showLoading()
+        page = 1
         category = selectedCategory
         getHeadlinesNews(context) { articlesList ->
             if (isNeedToRefresh) {
                 viewState.setDefaultMode()
                 viewState.displayNewsList(articlesList)
+                if (articlesList.size > 8) page = articlesList.size / 8
                 articles = articlesList
                 viewState.hideLoading()
             }

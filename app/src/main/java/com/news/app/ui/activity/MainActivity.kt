@@ -19,12 +19,14 @@ import com.news.app.common.Navigator
 import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
+import com.news.app.databinding.FragmentNewsDetailsBinding
 import com.news.app.ui.fragments.APPLY_FILTERS_KEY
 import com.news.app.ui.fragments.DISABLE_FILTERS_KEY
 import com.news.app.ui.fragments.ErrorFragment
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
+import com.news.app.ui.fragments.NewsDetailsFragment
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.ui.viewmodels.MainViewModel
@@ -53,25 +55,27 @@ class MainActivity : AppCompatActivity(), Navigator {
                     HeadLinesFragment::class -> {
                         binding.bottomNavView.selectedItemId =
                             R.id.headlines_page
+                        disableSearching()
                     }
 
                     SavedFragment::class -> {
                         binding.bottomNavView.selectedItemId =
                             R.id.saved_page
+                        disableSearching()
                     }
 
                     SourcesFragment::class -> {
                         binding.bottomNavView.selectedItemId =
                             R.id.sources_page
+                        disableSearching()
+                    }
+
+                    NewsDetailsFragment::class -> {
+                        disableSearching()
+                        handleOnBackPressed()
                     }
                 }
-                searching = false
-                supportFragmentManager.setFragmentResult(
-                    SEARCH_ENABLED_KEY,
-                    bundleOf(
-                        SEARCH_ENABLED to false
-                    )
-                )
+
             } else if (isSourcesWithArticle) {
                 val sourcesFragment =
                     supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
@@ -106,6 +110,16 @@ class MainActivity : AppCompatActivity(), Navigator {
             }
             isBackPressed = false
         }
+    }
+
+    private fun disableSearching() {
+        searching = false
+        supportFragmentManager.setFragmentResult(
+            SEARCH_ENABLED_KEY,
+            bundleOf(
+                SEARCH_ENABLED to false
+            )
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

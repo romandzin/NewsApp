@@ -21,5 +21,5 @@ interface Repository {
     suspend fun saveArticle(article: Article, savedDate: String)
 
     suspend fun deleteArticle(article: Article)
-    fun saveToCache(articlesList: java.util.ArrayList<Article>, page: Int)
+    fun saveToCache(articlesList: java.util.ArrayList<Article>, category: String)
 }

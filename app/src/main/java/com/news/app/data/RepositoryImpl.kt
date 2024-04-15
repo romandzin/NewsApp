@@ -32,20 +32,20 @@ class RepositoryImpl @Inject constructor(
         pageSize: Int,
         page: Int
     ): Observable<ArrayList<Article>> {
-        return cachedDao.getCachedArticlesByPage(page)
+        return cachedDao.getCachedArticlesByCategory(category)
             .take(1)
             .flatMap {
-                Log.d("tag", it.toString())
-                if (it.isEmpty()) {
-                    return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
-                        .flatMap { response ->
-                            saveToCache(response.articles, page)
-                            Observable.fromArray(response.articles)
-                        }
-                } else {
+                if (it.size >= page * pageSize) {
                     val articlesList: ArrayList<Article> =
                         it.map { articlesMapper.transform(it) } as ArrayList<Article>
                     return@flatMap Observable.fromArray(articlesList)
+                } else {
+                    return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
+                        .flatMap { response ->
+                            Log.d("tag", response.articles.toString())
+                            saveToCache(response.articles, category)
+                            Observable.fromArray(response.articles)
+                        }
                 }
             }
     }
@@ -114,8 +114,8 @@ class RepositoryImpl @Inject constructor(
         savedDao.deleteArticleByTitle(article.newsTitle!!)
     }
 
-    override fun saveToCache(articlesList: java.util.ArrayList<Article>, page: Int){
+    override fun saveToCache(articlesList: java.util.ArrayList<Article>, category: String){
         for (i in articlesList)
-            cachedDao.insertCacheArticle(articlesMapper.transform(i, page))
+            cachedDao.insertCacheArticle(articlesMapper.transformToCache(i, category))
     }
 }

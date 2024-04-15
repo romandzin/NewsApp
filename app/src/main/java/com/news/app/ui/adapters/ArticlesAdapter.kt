@@ -28,7 +28,7 @@ class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: 
     override fun onBindViewHolder(holder: HeadlinesViewHolder, position: Int) {
         holder.bindData(arrayList[position])
         holder.itemView.setOnClickListener {
-            clickItem(arrayList[position])
+            clickItem(arrayList[holder.adapterPosition])
         }
         if (searchMode) holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.main_blue, context.resources.newTheme()))
         else holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.white, context.resources.newTheme()))

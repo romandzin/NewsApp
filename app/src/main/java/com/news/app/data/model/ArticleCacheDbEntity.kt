@@ -23,10 +23,6 @@ data class ArticleCacheDbEntity(
     @ColumnInfo("sourceName")
     val sourceName: String?,
 
-    @ColumnInfo("page")
-    val page: Int,
-
-    @ColumnInfo("pag")
-    val pag: Int = 1
-
+    @ColumnInfo("category")
+    val category: String
 )

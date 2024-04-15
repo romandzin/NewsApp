@@ -39,14 +39,14 @@ class ArticlesMapper @Inject constructor() {
         )
     }
 
-    fun transform(article: Article, page: Int): ArticleCacheDbEntity {
+    fun transformToCache(article: Article, category: String): ArticleCacheDbEntity {
         return ArticleCacheDbEntity(
             newsTitle = article.newsTitle!!,
             newsIcon = article.newsIcon,
             publishedAt = article.publishedAt,
             content = article.content,
             sourceName = article.source.name,
-            page = page
+            category = category
         )
     }
 }

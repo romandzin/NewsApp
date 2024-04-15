@@ -6,7 +6,7 @@ import com.news.app.data.model.ArticleCacheDbEntity
 import com.news.app.data.model.ArticleSavedDbEntity
 
 @Database(
-    version = 3,
+    version = 2,
     entities = [
         ArticleSavedDbEntity::class,
         ArticleCacheDbEntity::class
