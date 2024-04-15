@@ -78,7 +78,7 @@ class SourcesAdapter(var arrayList: ArrayList<Source>, val parentFragment: Sourc
         }
 
         private fun setSourceIcon(source: Source) {
-            when (source.id) {
+            when (source.name) {
                 "BBC" -> {
                     loadPhoto(iconsArray[0])
                 }

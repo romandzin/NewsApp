@@ -90,11 +90,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     private fun setSearchModeToFragment() {
-        setAnotherMode()
-        articlesAdapter.setSearchMode()
-        displayNewsList(arrayListOf())
-        setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
-            headlinesPresenter.filter(bundle.getString(SEARCH_TEXT) ?: "")
+        if (this.isResumed) {
+            setAnotherMode()
+            articlesAdapter.setSearchMode()
+            displayNewsList(arrayListOf())
+            setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
+                headlinesPresenter.filter(bundle.getString(SEARCH_TEXT) ?: "")
+            }
         }
     }
 

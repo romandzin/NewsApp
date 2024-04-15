@@ -48,8 +48,20 @@ class MainActivity : AppCompatActivity(), Navigator {
             isBackPressed = true
             val size = supportFragmentManager.backStackEntryCount
             if (searching) {
-                binding.bottomNavView.selectedItemId =
-                    R.id.headlines_page
+                when (supportFragmentManager.fragments.last()::class) {
+                    HeadLinesFragment::class -> {
+                        binding.bottomNavView.selectedItemId =
+                            R.id.headlines_page
+                    }
+                    SavedFragment::class -> {
+                        binding.bottomNavView.selectedItemId =
+                            R.id.saved_page
+                    }
+                    SourcesFragment::class -> {
+                        binding.bottomNavView.selectedItemId =
+                            R.id.sources_page
+                    }
+                }
                 searching = false
                 supportFragmentManager.setFragmentResult(
                     SEARCH_ENABLED_KEY,
@@ -186,17 +198,27 @@ class MainActivity : AppCompatActivity(), Navigator {
                     SEARCH_ENABLED to true
                 )
             )
-            binding.toolbar.toolbarSearch.searchEditText.addTextChangedListener { text ->
-                supportFragmentManager.setFragmentResult(
-                    SEARCH_TEXT_ENTERED_KEY,
-                    bundleOf(
-                        SEARCH_TEXT to text.toString()
-                    )
+        }
+        binding.toolbar.toolbarSource.searchButton.setOnClickListener {
+            searching = true
+            setNewToolbarState(ToolbarState.Search)
+            supportFragmentManager.setFragmentResult(
+                SEARCH_ENABLED_KEY,
+                bundleOf(
+                    SEARCH_ENABLED to true
                 )
-            }
-            binding.toolbar.toolbarSearch.removeTextButton.setOnClickListener {
-                binding.toolbar.toolbarSearch.searchEditText.setText("")
-            }
+            )
+        }
+        binding.toolbar.toolbarSearch.searchEditText.addTextChangedListener { text ->
+            supportFragmentManager.setFragmentResult(
+                SEARCH_TEXT_ENTERED_KEY,
+                bundleOf(
+                    SEARCH_TEXT to text.toString()
+                )
+            )
+        }
+        binding.toolbar.toolbarSearch.removeTextButton.setOnClickListener {
+            binding.toolbar.toolbarSearch.searchEditText.setText("")
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
             goBack()
