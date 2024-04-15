@@ -96,7 +96,6 @@
         app:layout_constraintStart_toStartOf="@id/toggleButton"
         app:layout_constraintTop_toBottomOf="@id/dateText" />
 
-   <!--Попробовать обернуть в ToggleViewGroup-->
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/russianLanguageButton"
         android:layout_width="79dp"
@@ -131,5 +130,13 @@
         android:textAllCaps="false"
         app:layout_constraintStart_toEndOf="@id/englishLanguageButton"
         app:layout_constraintTop_toBottomOf="@id/languageText" />
+
+    <View
+        android:id="@+id/light_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/light_filter_background"
+        android:visibility="gone"
+        android:elevation="2dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

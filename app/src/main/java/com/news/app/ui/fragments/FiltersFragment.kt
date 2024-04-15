@@ -9,6 +9,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.os.bundleOf
 import androidx.core.util.Pair
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
@@ -47,9 +48,10 @@ class FiltersFragment : Fragment() {
         setToggleButtonListeners()
         setLanguageButtonListeners()
         binding.calendarIcon.setOnClickListener {
+            binding.lightBackground.isVisible = true
             val dateRangePicker =
                 MaterialDatePicker.Builder.dateRangePicker()
-                    .setTitleText("Select dates")
+                    .setTitleText("Select date")
                     .setSelection(
                         Pair(
                             MaterialDatePicker.thisMonthInUtcMilliseconds(),
@@ -61,7 +63,11 @@ class FiltersFragment : Fragment() {
                     .build()
 
             dateRangePicker.show(parentFragmentManager, "datePicker")
+            dateRangePicker.addOnDismissListener {
+                binding.lightBackground.isVisible = false
+            }
             dateRangePicker.addOnPositiveButtonClickListener {
+                binding.lightBackground.isVisible = false
                 val firstDate = getDate(dateRangePicker.selection!!.first, "MMM dd")!!
                 filters.dateFrom = getDate(dateRangePicker.selection!!.first, "yyyy-MM-dd")!!
                 val secondDate = getDate(dateRangePicker.selection!!.second, "MMM dd, YYYY")!!
