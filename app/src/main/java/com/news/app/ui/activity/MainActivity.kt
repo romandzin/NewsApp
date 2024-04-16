@@ -76,14 +76,18 @@ class MainActivity : AppCompatActivity(), Navigator {
                     }
                 }
 
-            } else if (isSourcesWithArticle) {
+            } else if (supportFragmentManager.findFragmentByTag("errorFragment") != null) {
+                removeError()
+                if (supportFragmentManager.fragments[size - 2]::class == SourcesFragment::class) {
+                    setNewToolbarState(ToolbarState.Default, "Source")
+                    isSourcesWithArticle = false
+                }
+            } else if (supportFragmentManager.fragments.last()::class == SourcesFragment::class && isSourcesWithArticle) {
                 val sourcesFragment =
                     supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
                 sourcesFragment.goBack()
                 isSourcesWithArticle = false
                 setNewToolbarState(ToolbarState.Default, "Source")
-            } else if (supportFragmentManager.findFragmentByTag("errorFragment") != null) {
-                removeError()
             } else {
                 if (size == 1) finish()
                 else {
@@ -99,6 +103,7 @@ class MainActivity : AppCompatActivity(), Navigator {
 
                         SourcesFragment::class.java -> {
                             binding.bottomNavView.selectedItemId = R.id.sources_page
+                            isSourcesWithArticle = false
                         }
 
                         SavedFragment::class.java -> {
@@ -262,9 +267,6 @@ class MainActivity : AppCompatActivity(), Navigator {
         }
         if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
-        else {
-            //moveToErrorFragment(ErrorFragment.newInstance(NO_INTERNET_ERROR), "errorFragment")
-        }
     }
 
     private fun observeInternetConnection() {

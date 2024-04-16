@@ -11,8 +11,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.common.Navigator
 import com.news.app.core.App
-import com.news.app.data.model.Article
-import com.news.app.data.model.Source
+import com.news.app.domain.model.Article
+import com.news.app.domain.model.Source
 import com.news.app.databinding.FragmentSourcesBinding
 import com.news.app.ui.activity.SEARCH_ENABLED
 import com.news.app.ui.activity.SEARCH_ENABLED_KEY

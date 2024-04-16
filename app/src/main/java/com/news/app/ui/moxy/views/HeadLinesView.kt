@@ -1,6 +1,6 @@
 package com.news.app.ui.moxy.views
 
-import com.news.app.data.model.Article
+import com.news.app.domain.model.Article
 import moxy.MvpView
 import moxy.viewstate.strategy.OneExecutionStateStrategy
 import moxy.viewstate.strategy.StateStrategyType

@@ -4,28 +4,26 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.core.AppDependenciesProvider
-import com.news.app.data.model.Article
-import com.news.app.data.model.Source
+import com.news.app.domain.model.Article
+import com.news.app.domain.model.Source
+import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.Repository
 import com.news.app.ui.fragments.ANOTHER_ERROR
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.InAppError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.flow.onEach
 import java.util.Locale
 
 class SourcesViewModel: ViewModel() {
 
     lateinit var dataRepository: Repository
-    private var page = 1
+    private var page = 2
     private var pageSize = 8
     private var isShowingArticles = false
 
@@ -72,6 +70,7 @@ class SourcesViewModel: ViewModel() {
             .subscribe({ sourcesList ->
                 _sourcesList.value = sourcesList
                 listOfSavedSources.addAll(sourcesList)
+                listOfSavedSources.distinct()
                 Log.d("tag", sourcesList.toString())
             },
                 {
@@ -99,13 +98,12 @@ class SourcesViewModel: ViewModel() {
                 _unshowError.value = null
                 _sourcesList.value = sourcesList
                 listOfSavedSources.addAll(sourcesList)
+                listOfSavedSources.distinct()
             },
         {
             it.printStackTrace()
         })
     }
-
-    //TODO добавить кэш
 
     fun filter(text: String) {
         if (isShowingArticles) {
@@ -134,7 +132,7 @@ class SourcesViewModel: ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNewsWithSource(sourceCategory: String, context: Context, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+    private fun getHeadlinesNewsWithSource(sourceCategory: String, context: Context, subscribeAction: (ArrayList<Article>) -> Unit) {
         val function = { getHeadlinesNewsWithSourceWithError(sourceCategory, subscribeAction)}
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
             .subscribeOn(Schedulers.io())
@@ -159,7 +157,7 @@ class SourcesViewModel: ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNewsWithSourceWithError(sourceCategory: String, subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit) {
+    private fun getHeadlinesNewsWithSourceWithError(sourceCategory: String, subscribeAction: (ArrayList<Article>) -> Unit) {
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -176,10 +174,10 @@ class SourcesViewModel: ViewModel() {
 
     fun sourceClicked(source: String, context: Context) {
         isShowingArticles = true
-        getHeadlinesNewsWithSource(source, context) { response ->
-            _articlesList.value = response.articles
-            listOfSavedArticles.addAll(response.articles)
-            Log.d("tag", response.articles.toString())
+        getHeadlinesNewsWithSource(source, context) { articlesList ->
+            _articlesList.value = articlesList
+            listOfSavedArticles.addAll(articlesList)
+            listOfSavedArticles.distinct()
         }
     }
 

@@ -1,8 +1,7 @@
 package com.news.app.data.retrofit
 
-import com.news.app.data.model.ArticlesResponse
-import com.news.app.data.model.Source
-import com.news.app.data.model.SourcesResponse
+import com.news.app.data.model.network_reponses.ArticlesResponse
+import com.news.app.data.model.network_reponses.SourcesResponse
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query

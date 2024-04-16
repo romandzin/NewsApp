@@ -4,10 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import com.news.app.core.AppDependenciesProvider
-import com.news.app.data.model.Article
 import com.news.app.domain.Repository
+import com.news.app.domain.model.Article
 import com.news.app.ui.fragments.ANOTHER_ERROR
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.Filters
@@ -146,7 +145,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private fun getFilteredNews(
         filters: Filters,
         context: Context,
-        subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit
+        subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         val function = { getFilteredNewsWithError(filters, subscribeAction) }
         dataRepository.getFilteredNews(
@@ -160,8 +159,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
-            .subscribe({ response ->
-                subscribeAction(response)
+            .subscribe({ articleList ->
+                subscribeAction(articleList)
             },
                 {
                     if (observerInternetConnection(context)) {
@@ -175,7 +174,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     @SuppressLint("CheckResult")
     private fun getFilteredNewsWithError(
         filters: Filters,
-        subscribeAction: (com.news.app.data.model.ArticlesResponse) -> Unit
+        subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         dataRepository.getFilteredNews(
             filters.dateFrom,
@@ -198,8 +197,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     fun enableFilters(filters: Filters, context: Context) {
-        getFilteredNews(filters, context) { response ->
-            viewState.displayNewsList(response.articles)
+        getFilteredNews(filters, context) { articleArrayList ->
+            viewState.displayNewsList(articleArrayList)
             viewState.hideLoading()
         }
     }

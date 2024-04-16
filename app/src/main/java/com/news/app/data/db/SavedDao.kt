@@ -3,8 +3,7 @@ package com.news.app.data.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.news.app.data.model.ArticleCacheDbEntity
-import com.news.app.data.model.ArticleSavedDbEntity
+import com.news.app.data.model.db_entities.ArticleSavedDbEntity
 import io.reactivex.rxjava3.core.Flowable
 
 @Dao

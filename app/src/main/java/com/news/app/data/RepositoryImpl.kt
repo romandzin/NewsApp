@@ -4,10 +4,11 @@ import android.annotation.SuppressLint
 import android.util.Log
 import com.news.app.data.db.CachedDao
 import com.news.app.data.db.SavedDao
-import com.news.app.data.mappers.ArticlesMapper
-import com.news.app.data.model.Article
-import com.news.app.data.model.ArticlesResponse
-import com.news.app.data.model.Source
+import com.news.app.data.mappers.DatabaseObjectsMapper
+import com.news.app.domain.model.Article
+import com.news.app.data.model.db_entities.ArticleSavedDbEntity
+import com.news.app.data.model.network_reponses.ArticlesResponse
+import com.news.app.domain.model.Source
 import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.domain.Repository
 import io.reactivex.rxjava3.core.Flowable
@@ -23,8 +24,10 @@ class RepositoryImpl @Inject constructor(
     var newsServiceApi: ApiNewsService,
     var savedDao: SavedDao,
     var cachedDao: CachedDao,
-    var articlesMapper: ArticlesMapper
+    var databaseObjectsMapper: DatabaseObjectsMapper
 ) : Repository {
+
+    private val oldSavedArticles = mutableListOf<ArticleSavedDbEntity>()
 
     @SuppressLint("CheckResult")
     override fun getHeadlinesNews(
@@ -37,7 +40,7 @@ class RepositoryImpl @Inject constructor(
             .flatMap {
                 if (it.size >= page * pageSize) {
                     val articlesList: ArrayList<Article> =
-                        it.map { articlesMapper.transform(it) } as ArrayList<Article>
+                        it.map { databaseObjectsMapper.transform(it) } as ArrayList<Article>
                     return@flatMap Observable.fromArray(articlesList)
                 } else {
                     return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
@@ -51,11 +54,26 @@ class RepositoryImpl @Inject constructor(
     }
 
     override fun getHeadlinesNewsWithSource(
-        sourceCategory: String,
+        source: String,
         pageSize: Int,
         page: Int
-    ): Observable<ArticlesResponse> {
-        return newsServiceApi.getHeadlinesNews(sourceCategory, pageSize, page)
+    ): Observable<ArrayList<Article>> {
+        return cachedDao.getCachedArticlesBySource(source)
+            .take(1)
+            .subscribeOn(Schedulers.io())
+            .flatMap { articleBySourceList ->
+                if (articleBySourceList.isEmpty()) {
+                    return@flatMap newsServiceApi.getHeadlinesNewsWithSource(source, pageSize, page)
+                        .flatMap { sourceResponse ->
+                            saveArticlesWithSourceToCache(sourceResponse.articles)
+                            Observable.fromArray(sourceResponse.articles)
+                        }
+                } else {
+                    val articlesList: ArrayList<Article> =
+                        articleBySourceList.map { databaseObjectsMapper.transform(it) } as ArrayList<Article>
+                    return@flatMap Observable.fromArray(articlesList)
+                }
+            }
     }
 
     override fun getFilteredNews(
@@ -65,7 +83,7 @@ class RepositoryImpl @Inject constructor(
         sortBy: String,
         pageSize: Int,
         page: Int
-    ): Observable<ArticlesResponse> {
+    ): Observable<ArrayList<Article>> {
         return newsServiceApi.getFilteredNews(
             from = from,
             to = to,
@@ -74,24 +92,52 @@ class RepositoryImpl @Inject constructor(
             pageSize = pageSize,
             page = page
         )
+            .flatMap { response ->
+                Observable.fromArray(response.articles)
+            }
     }
 
+    @SuppressLint("CheckResult")
     override fun getSources(): Observable<ArrayList<Source>> {
-        return newsServiceApi.getSources().flatMap { sourceResponse ->
-            Observable.fromArray(sourceResponse.sourcesList)
-        }
+        return cachedDao.getCachedSources()
+            .take(1)
+            .subscribeOn(Schedulers.io())
+            .flatMap { sourceDbList ->
+                if (sourceDbList.isEmpty()) {
+                    return@flatMap newsServiceApi.getSources()
+                        .flatMap { sourceResponse ->
+                            saveSourcesToCache(sourceResponse.sourcesList)
+                            Observable.fromArray(sourceResponse.sourcesList)
+                        }
+                } else {
+                    val sourcesList: ArrayList<Source> =
+                        sourceDbList.map { databaseObjectsMapper.transformSource(it) } as ArrayList<Source>
+                    return@flatMap Observable.fromArray(sourcesList)
+                }
+            }
     }
 
     @SuppressLint("CheckResult")
     override fun getSavedList(): Flowable<ArrayList<Article?>> {
         return savedDao.getAllArticles()
+            .take(1)
             .subscribeOn(Schedulers.io())
             .flatMap { dbEntityList ->
                 val articlesList = dbEntityList.map { dbElement ->
-                    if (checkIfDateIsOld(dbElement.savedDate)) articlesMapper.transform(dbElement)
-                    else null
+                    if (checkIfDateIsOld(dbElement.savedDate)) databaseObjectsMapper.transform(
+                        dbElement
+                    )
+                    else {
+                        oldSavedArticles.add(dbElement)
+                        null
+                    }
                 } as java.util.ArrayList
                 Flowable.fromArray(articlesList)
+            }
+            .doOnComplete {
+                for (i in oldSavedArticles) {
+                    savedDao.deleteArticleByTitle(i.newsTitle)
+                }
             }
     }
 
@@ -107,15 +153,25 @@ class RepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveArticle(article: Article, savedDate: String) {
-        savedDao.insertNewArticle(articlesMapper.transform(article, savedDate))
+        savedDao.insertNewArticle(databaseObjectsMapper.transform(article, savedDate))
     }
 
     override suspend fun deleteArticle(article: Article) {
         savedDao.deleteArticleByTitle(article.newsTitle!!)
     }
 
-    override fun saveToCache(articlesList: java.util.ArrayList<Article>, category: String){
+    override fun saveToCache(articlesList: java.util.ArrayList<Article>, category: String) {
         for (i in articlesList)
-            cachedDao.insertCacheArticle(articlesMapper.transformToCache(i, category))
+            cachedDao.insertCacheArticle(databaseObjectsMapper.transformToCache(i, category))
+    }
+
+    private fun saveSourcesToCache(sourcesList: java.util.ArrayList<Source>) {
+        for (i in sourcesList)
+            cachedDao.insertSource(databaseObjectsMapper.transformSource(i))
+    }
+
+    private fun saveArticlesWithSourceToCache(articlesList: java.util.ArrayList<Article>) {
+        for (i in articlesList)
+            cachedDao.insertCacheArticleBySource(databaseObjectsMapper.transformToArticleSourceCache(i))
     }
 }

@@ -1,19 +1,15 @@
 package com.news.app.ui.viewmodels
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.news.app.core.AppDependenciesProvider
-import com.news.app.data.model.Article
+import com.news.app.domain.model.Article
 import com.news.app.domain.Repository
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat

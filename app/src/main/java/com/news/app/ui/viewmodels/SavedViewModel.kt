@@ -1,21 +1,18 @@
 package com.news.app.ui.viewmodels
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.news.app.core.AppDependenciesProvider
-import com.news.app.data.model.Article
+import com.news.app.domain.model.Article
 import com.news.app.domain.Repository
 import com.news.app.ui.fragments.ANOTHER_ERROR
-import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.InAppError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.Locale
-import javax.inject.Inject
 
 class SavedViewModel : ViewModel() {
 

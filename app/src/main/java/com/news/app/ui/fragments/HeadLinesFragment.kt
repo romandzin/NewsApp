@@ -11,7 +11,7 @@ import com.google.android.material.tabs.TabLayout
 import com.news.app.common.Extensions.getParcelableCompat
 import com.news.app.common.Navigator
 import com.news.app.core.App
-import com.news.app.data.model.Article
+import com.news.app.domain.model.Article
 import com.news.app.databinding.FragmentHeadLinesBinding
 import com.news.app.ui.activity.MainActivity
 import com.news.app.ui.activity.SEARCH_ENABLED

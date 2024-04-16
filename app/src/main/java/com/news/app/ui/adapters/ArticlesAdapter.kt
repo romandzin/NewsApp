@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.news.app.R
 import com.news.app.common.Navigator
-import com.news.app.data.model.Article
+import com.news.app.domain.model.Article
 import com.news.app.ui.fragments.NewsDetailsFragment
 import com.squareup.picasso.Picasso
 

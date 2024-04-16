@@ -1,6 +1,5 @@
 package com.news.app.ui.adapters
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.news.app.R
-import com.news.app.common.Navigator
-import com.news.app.data.model.Article
-import com.news.app.data.model.Source
-import com.news.app.ui.fragments.NewsDetailsFragment
+import com.news.app.domain.model.Source
 import com.news.app.ui.fragments.SourcesFragment
 import com.squareup.picasso.Picasso
 
