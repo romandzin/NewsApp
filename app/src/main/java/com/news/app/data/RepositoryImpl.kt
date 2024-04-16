@@ -124,7 +124,8 @@ class RepositoryImpl @Inject constructor(
             .subscribeOn(Schedulers.io())
             .flatMap { dbEntityList ->
                 val articlesList = dbEntityList.map { dbElement ->
-                    if (checkIfDateIsOld(dbElement.savedDate)) databaseObjectsMapper.transform(
+                    if (checkIfDateIsOld(dbElement.savedDate))
+                        databaseObjectsMapper.transform(
                         dbElement
                     )
                     else {
