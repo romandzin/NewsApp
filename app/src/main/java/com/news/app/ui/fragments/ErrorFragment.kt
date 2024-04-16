@@ -5,10 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.news.app.databinding.FragmentErrorBinding
-import com.news.app.ui.di.error.DaggerErrorComponent
 import com.news.app.ui.viewmodels.ErrorViewModel
-import javax.inject.Inject
 
 const val NO_INTERNET_ERROR = 0
 const val ANOTHER_ERROR = 1
@@ -17,8 +16,9 @@ const val ERROR_TYPE = "error type"
 class ErrorFragment : Fragment() {
 
     private lateinit var binding: FragmentErrorBinding
-    @Inject
-    lateinit var errorViewModel: ErrorViewModel
+    private val errorViewModel by lazy {
+        ViewModelProvider(this)[ErrorViewModel::class.java]
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,14 +30,11 @@ class ErrorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        DaggerErrorComponent
-            .builder()
-            .build()
-            .inject(this)
         errorViewModel.errorTextLiveData.observe(viewLifecycleOwner) { errorText ->
             binding.errorText.text = errorText
         }
         binding.refreshIcon.setOnClickListener {
+            binding.refreshIcon.animate().rotationBy(1800F).setDuration(3000).start()
             errorViewModel.refreshButtonClicked(lastFunction)
         }
         errorViewModel.viewInit(getBundleData())

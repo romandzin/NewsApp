@@ -151,7 +151,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     override fun showError(errorText: Int, lastAction: () -> Unit) {
-        navigator.showError(ANOTHER_ERROR, lastAction)
+        navigator.showError(errorText, lastAction)
     }
 
     override fun showLoading() {
