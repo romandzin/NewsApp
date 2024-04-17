@@ -58,30 +58,37 @@ class SourcesFragment : Fragment() {
 
     private fun initFragment() {
         sourcesViewModel.sourcesList.observe(viewLifecycleOwner) { sourcesList ->
-            setAdapter(sourcesList)
-            hideLoading()
-            binding.refreshLayout.isRefreshing = false
+            showLoadedList(sourcesList)
         }
         binding.refreshLayout.setOnRefreshListener {
-            initFragment()
+            sourcesViewModel.pulledToRefresh(requireContext())
         }
         observeError()
-        setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
-            if (bundle.getBoolean(SEARCH_ENABLED)) {
-                setSearchModeToFragment()
-            }
-            else disableSearchMode()
-        }
+        setListenerForSearchMode()
         sourcesViewModel.init((requireActivity().application as App).provideAppDependenciesProvider(), requireContext())
         showLoading()
     }
 
+    private fun setListenerForSearchMode() {
+        setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
+            if (bundle.getBoolean(SEARCH_ENABLED)) {
+                setSearchModeToFragment()
+            } else disableSearchMode()
+        }
+    }
+
+    private fun <T> showLoadedList(arrayList: ArrayList<T>) {
+        if (arrayList[0] is Source) setAdapter(arrayList as ArrayList<Source>)
+        else setAdapterArticles(arrayList as ArrayList<Article>)
+        hideLoading()
+        binding.refreshLayout.isRefreshing = false
+    }
+
     fun showArticles(source: String, name: String) {
+        showLoading()
         navigator.sourcesShowingArticles(name)
-        sourcesViewModel.articlesList.observe(viewLifecycleOwner) { sourcesList ->
-            setAdapterArticles(sourcesList)
-            hideLoading()
-            binding.refreshLayout.isRefreshing = false
+        sourcesViewModel.articlesList.observe(viewLifecycleOwner) { articlesList ->
+            showLoadedList(articlesList)
         }
         sourcesViewModel.sourceClicked(source, requireContext())
     }

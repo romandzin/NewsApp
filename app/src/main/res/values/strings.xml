@@ -23,4 +23,8 @@
     <string name="deutsch">Deutsch</string>
     <string name="internet_error">No internet connection</string>
     <string name="refresh">Refresh</string>
+    <string name="country">Country</string>
+    <string name="russia">Россия</string>
+    <string name="englang">England</string>
+    <string name="deutchland">Deutchland\n</string>
 </resources>

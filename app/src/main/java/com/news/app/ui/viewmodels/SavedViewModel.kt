@@ -34,8 +34,8 @@ class SavedViewModel : ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    fun getList() {
-        val function = {getListWithError()}
+    private fun getList() {
+        val function = { getListWithError() }
         dataRepository.getSavedList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -43,7 +43,6 @@ class SavedViewModel : ViewModel() {
                 savedList.removeIf { it == null }
                 _savedList.value = savedList as ArrayList<Article>
                 listOfSavedArticles.addAll(savedList)
-                Log.d("tag", savedList.toString())
             },
                 {
                     it.printStackTrace()
@@ -54,7 +53,7 @@ class SavedViewModel : ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    fun getListWithError() {
+    private fun getListWithError() {
         dataRepository.getSavedList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -67,7 +66,11 @@ class SavedViewModel : ViewModel() {
             }
     }
 
-    fun filter(text: String) {
+    fun gotSearchText(text: String) {
+        findArticlesThatContainsText(text)
+    }
+
+    private fun findArticlesThatContainsText(text: String) {
         val filteredList: ArrayList<Article> = ArrayList()
         for (item in listOfSavedArticles) {
             if (item.newsTitle?.lowercase()
@@ -78,5 +81,9 @@ class SavedViewModel : ViewModel() {
             }
         }
         _savedList.value = filteredList
+    }
+
+    fun refreshView() {
+        getList()
     }
 }

@@ -1,5 +1,8 @@
 package com.news.app.ui.fragments
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -44,48 +47,80 @@ class FiltersFragment : Fragment() {
         return binding.root
     }
 
+    private fun observeInternetConnection(context: Context): Boolean {
+        var result: Boolean
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCapabilities = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+        result = when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
+        return result
+    }
+
     private fun initView() {
-        setToggleButtonListeners()
-        setLanguageButtonListeners()
-        binding.calendarIcon.setOnClickListener {
-            binding.lightBackground.isVisible = true
-            val dateRangePicker =
-                MaterialDatePicker.Builder.dateRangePicker()
-                    .setTitleText("Select date")
-                    .setSelection(
-                        Pair(
-                            MaterialDatePicker.thisMonthInUtcMilliseconds(),
-                            MaterialDatePicker.todayInUtcMilliseconds()
-                        )
-                    )
-
-                    .setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar_New)
-                    .build()
-
-            dateRangePicker.show(parentFragmentManager, "datePicker")
-            dateRangePicker.addOnDismissListener {
-                binding.lightBackground.isVisible = false
+        if (!observeInternetConnection(requireContext())) setNoInternetMode()
+        else {
+            setToggleButtonListeners()
+            setLanguageButtonListeners()
+            binding.calendarIcon.setOnClickListener {
+                prepareDialog()
             }
-            dateRangePicker.addOnPositiveButtonClickListener {
-                binding.lightBackground.isVisible = false
-                val firstDate = getDate(dateRangePicker.selection!!.first, "MMM dd")!!
-                filters.dateFrom = getDate(dateRangePicker.selection!!.first, "yyyy-MM-dd")!!
-                val secondDate = getDate(dateRangePicker.selection!!.second, "MMM dd, YYYY")!!
-                filters.dateTo = getDate(dateRangePicker.selection!!.second, "yyyy-MM-dd")!!
-                binding.calendarText.text = "$firstDate-$secondDate"
-                binding.calendarText.setTextColor(
-                    resources.getColor(
-                        R.color.main_blue,
-                        context?.theme
+        }
+    }
+
+    private fun setNoInternetMode() {
+        binding.dateText.isVisible = false
+        binding.calendarIcon.isVisible = false
+        binding.calendarText.isVisible = false
+        binding.toggleButton.isVisible = false
+        binding.languageText.setText(R.string.country)
+        binding.russianLanguageButton.setText(R.string.russia)
+        binding.englishLanguageButton.setText(R.string.englang)
+        binding.deutschLanguageButton.setText(R.string.deutchland)
+    }
+
+    private fun prepareDialog() {
+        binding.lightBackground.isVisible = true
+        val dateRangePicker =
+            MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("Select date")
+                .setSelection(
+                    Pair(
+                        MaterialDatePicker.thisMonthInUtcMilliseconds(),
+                        MaterialDatePicker.todayInUtcMilliseconds()
                     )
                 )
-                binding.calendarIcon.setImageDrawable(
-                    AppCompatResources.getDrawable(
-                        requireContext(),
-                        R.drawable.ic_selected_calendar
-                    )
+
+                .setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar_New)
+                .build()
+
+        dateRangePicker.show(parentFragmentManager, "datePicker")
+        dateRangePicker.addOnDismissListener {
+            binding.lightBackground.isVisible = false
+        }
+        dateRangePicker.addOnPositiveButtonClickListener {
+            binding.lightBackground.isVisible = false
+            val firstDate = getDate(dateRangePicker.selection!!.first, "MMM dd")!!
+            filters.dateFrom = getDate(dateRangePicker.selection!!.first, "yyyy-MM-dd")!!
+            val secondDate = getDate(dateRangePicker.selection!!.second, "MMM dd, YYYY")!!
+            filters.dateTo = getDate(dateRangePicker.selection!!.second, "yyyy-MM-dd")!!
+            binding.calendarText.text = "$firstDate-$secondDate"
+            binding.calendarText.setTextColor(
+                resources.getColor(
+                    R.color.main_blue,
+                    context?.theme
                 )
-            }
+            )
+            binding.calendarIcon.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_selected_calendar
+                )
+            )
         }
     }
 
@@ -176,10 +211,6 @@ class FiltersFragment : Fragment() {
                 )
             )
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
     }
 
     companion object {
