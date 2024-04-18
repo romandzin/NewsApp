@@ -1,6 +1,7 @@
 package com.news.app.ui.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,9 +15,19 @@ import com.news.app.domain.model.Article
 import com.news.app.ui.fragments.NewsDetailsFragment
 import com.squareup.picasso.Picasso
 
-class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: Navigator, val context: Context): RecyclerView.Adapter<ArticlesAdapter.HeadlinesViewHolder>() {
+class ArticlesAdapter(
+    var arrayList: ArrayList<Article>,
+    private val navigator: Navigator,
+    val context: Context
+) : RecyclerView.Adapter<ArticlesAdapter.HeadlinesViewHolder>() {
 
-    val iconsArray = arrayListOf(R.drawable.ic_bbc, R.drawable.ic_bloomberg, R.drawable.ic_cnn, R.drawable.ic_new_york_times, R.drawable.ic_daily_mail)
+    val iconsArray = arrayListOf(
+        R.drawable.ic_bbc,
+        R.drawable.ic_bloomberg,
+        R.drawable.ic_cnn,
+        R.drawable.ic_new_york_times,
+        R.drawable.ic_daily_mail
+    )
     private var searchMode = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeadlinesViewHolder {
@@ -30,8 +41,18 @@ class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: 
         holder.itemView.setOnClickListener {
             clickItem(arrayList[holder.adapterPosition])
         }
-        if (searchMode) holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.main_blue, context.resources.newTheme()))
-        else holder.itemView.rootView.setBackgroundColor(context.resources.getColor(R.color.white, context.resources.newTheme()))
+        if (searchMode) holder.itemView.rootView.setBackgroundColor(
+            context.resources.getColor(
+                R.color.main_blue,
+                context.resources.newTheme()
+            )
+        )
+        else holder.itemView.rootView.setBackgroundColor(
+            context.resources.getColor(
+                R.color.white,
+                context.resources.newTheme()
+            )
+        )
     }
 
     private fun clickItem(article: Article) {
@@ -58,7 +79,7 @@ class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: 
         searchMode = false
     }
 
-    inner class HeadlinesViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class HeadlinesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val newsImageView: ImageView
         private val channelImageView: ImageView
         private val channelNameTextView: TextView
@@ -121,7 +142,10 @@ class ArticlesAdapter(var arrayList: ArrayList<Article>, private val navigator: 
         }
     }
 
-    inner class DiffCallback(private val oldList: ArrayList<Article>, private val newList: ArrayList<Article>): DiffUtil.Callback() {
+    inner class DiffCallback(
+        private val oldList: ArrayList<Article>,
+        private val newList: ArrayList<Article>
+    ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int = oldList.size
 

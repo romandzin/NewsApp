@@ -14,6 +14,8 @@ interface Repository {
 
     fun getFilteredNews(from: String, to: String, language: String, sortBy: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
 
+    fun getFilteredNewsInCache(from: String, to: String): Observable<ArrayList<Article>>
+
     fun getSources(): Observable<ArrayList<Source>>
 
     fun getSavedList(): Flowable<ArrayList<Article?>>

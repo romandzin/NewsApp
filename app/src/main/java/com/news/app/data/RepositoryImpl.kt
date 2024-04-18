@@ -5,9 +5,9 @@ import android.util.Log
 import com.news.app.data.db.CachedDao
 import com.news.app.data.db.SavedDao
 import com.news.app.data.mappers.DatabaseObjectsMapper
+import com.news.app.data.model.db_entities.ArticleCacheDbEntity
 import com.news.app.domain.model.Article
 import com.news.app.data.model.db_entities.ArticleSavedDbEntity
-import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.model.Source
 import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.domain.Repository
@@ -16,6 +16,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -95,6 +96,36 @@ class RepositoryImpl @Inject constructor(
             .flatMap { response ->
                 Observable.fromArray(response.articles)
             }
+    }
+
+    override fun getFilteredNewsInCache(from: String, to: String): Observable<ArrayList<Article>> {
+        return cachedDao.getAllCachedArticles()
+            .flatMap { arrayDbArticlesList ->
+                filterLocalArticles(from, to, arrayDbArticlesList)
+            }
+    }
+
+    private fun filterLocalArticles(
+        from: String,
+        to: String,
+        arrayDbArticlesList: List<ArticleCacheDbEntity>
+    ): Observable<ArrayList<Article>> {
+        val filteredArticles = arrayListOf<Article>()
+        val publishedAtDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault())
+        val filtersDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val fromDate = filtersDateFormat.parse(from)
+        val toDate = filtersDateFormat.parse(to)
+        for (i in arrayDbArticlesList) {
+            val articleSavedData = i.publishedAt?.let { publishedAtDateFormat.parse(it) }
+            if (isWithinRange(fromDate!!, toDate!!, articleSavedData!!)) filteredArticles.add(
+                databaseObjectsMapper.transform(i)
+            )
+        }
+        return Observable.fromArray(filteredArticles)
+    }
+
+    private fun isWithinRange(fromDate: Date, toDate: Date, articleDate: Date): Boolean {
+        return !(articleDate.before(fromDate) || articleDate.after(toDate))
     }
 
     @SuppressLint("CheckResult")

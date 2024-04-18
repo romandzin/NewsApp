@@ -24,6 +24,9 @@ interface CachedDao {
     @Query("SELECT * from cached_source")
     fun getCachedSources(): Observable<List<SourceDbEntity>>
 
+    @Query("SELECT * from cache_articles")
+    fun getAllCachedArticles(): Observable<List<ArticleCacheDbEntity>>
+
     @Query("SELECT * from cache_articles WHERE category = (:category)")
     fun getCachedArticlesByCategory(category: String): Observable<List<ArticleCacheDbEntity>>
 

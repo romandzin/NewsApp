@@ -3,6 +3,7 @@ package com.news.app.ui.activity
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
 import com.news.app.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.onEach
+import java.lang.Exception
 
 const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
@@ -76,12 +78,19 @@ class MainActivity : AppCompatActivity(), Navigator {
                     }
                 }
 
-            } else if (supportFragmentManager.findFragmentByTag("errorFragment") != null) {
+            } else if (supportFragmentManager.findFragmentByTag("errorFragment") != null && supportFragmentManager.fragments.last().tag == "errorFragment") {
                 removeError()
-                if (supportFragmentManager.fragments[size - 2]::class == SourcesFragment::class) {
-                    setNewToolbarState(ToolbarState.Default, "Source")
-                    isSourcesWithArticle = false
+                isBackPressed = false
+                binding.bottomNavView.selectedItemId = binding.bottomNavView.selectedItemId
+                /*try {
+                    if (supportFragmentManager.fragments.size >= 2 && supportFragmentManager.fragments[size - 2]::class == SourcesFragment::class) {
+                        setNewToolbarState(ToolbarState.Default, "Source")
+                        isSourcesWithArticle = false
+                    }
                 }
+                catch (e: Exception) {
+                    e.printStackTrace()
+                } */
             } else if (supportFragmentManager.fragments.last()::class == SourcesFragment::class && isSourcesWithArticle) {
                 val sourcesFragment =
                     supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
@@ -247,6 +256,7 @@ class MainActivity : AppCompatActivity(), Navigator {
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
             goBack()
+            if (binding.bottomNavView.selectedItemId != R.id.headlines_page) binding.bottomNavView.selectedItemId = R.id.headlines_page
             supportFragmentManager.setFragmentResult(
                 APPLY_FILTERS_KEY,
                 bundleOf()

@@ -32,6 +32,8 @@ class SourcesFragment : Fragment() {
     private val navigator by lazy {
         requireActivity() as Navigator
     }
+    private var articlesAdapter: ArticlesAdapter? = null
+    private lateinit var sourcesAdapter: SourcesAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +59,7 @@ class SourcesFragment : Fragment() {
     }
 
     private fun initFragment() {
+        setAdapter(arrayListOf())
         sourcesViewModel.sourcesList.observe(viewLifecycleOwner) { sourcesList ->
             showLoadedList(sourcesList)
         }
@@ -78,29 +81,39 @@ class SourcesFragment : Fragment() {
     }
 
     private fun <T> showLoadedList(arrayList: ArrayList<T>) {
-        if (arrayList[0] is Source) setAdapter(arrayList as ArrayList<Source>)
-        else setAdapterArticles(arrayList as ArrayList<Article>)
+        if (arrayList[0] is Source) displaySourcesList(arrayList as ArrayList<Source>)
+        else displayArticlesList(arrayList as ArrayList<Article>)
         hideLoading()
         binding.refreshLayout.isRefreshing = false
     }
 
+    private fun displaySourcesList(newsList: ArrayList<Source>) {
+        sourcesAdapter.setData(sourcesAdapter.arrayList, newsList)
+    }
+
+    private fun displayArticlesList(newsList: ArrayList<Article>) {
+        articlesAdapter!!.setData(articlesAdapter!!.arrayList, newsList)
+    }
     fun showArticles(source: String, name: String) {
         showLoading()
+        setAdapterArticles(arrayListOf())
         navigator.sourcesShowingArticles(name)
         sourcesViewModel.articlesList.observe(viewLifecycleOwner) { articlesList ->
-            showLoadedList(articlesList)
+            if (articlesList != null) showLoadedList(articlesList)
         }
         sourcesViewModel.sourceClicked(source, requireContext())
     }
 
     private fun setAdapter(sourcesList: ArrayList<Source>) {
-        val sourcesAdapter =
+        sourcesAdapter =
             SourcesAdapter(sourcesList, this)
         binding.sourcesRecyclerView.adapter = sourcesAdapter
     }
 
     private fun setSearchModeToFragment() {
         if (this.isResumed) {
+            sourcesAdapter.setSearchMode()
+            articlesAdapter?.setSearchMode()
             displayEmptyList()
             setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
                 sourcesViewModel.filter(bundle.getString(SEARCH_TEXT) ?: "")
@@ -109,6 +122,8 @@ class SourcesFragment : Fragment() {
     }
 
     private fun disableSearchMode() {
+        sourcesAdapter.disableSearchMode()
+        articlesAdapter?.disableSearchMode()
         displayEmptyList()
         initFragment()
     }
@@ -121,7 +136,7 @@ class SourcesFragment : Fragment() {
     }
 
     private fun setAdapterArticles(sourcesList: ArrayList<Article>) {
-        val articlesAdapter =
+        articlesAdapter =
             ArticlesAdapter(sourcesList, requireActivity() as Navigator, requireContext())
         binding.sourcesRecyclerView.adapter = articlesAdapter
     }

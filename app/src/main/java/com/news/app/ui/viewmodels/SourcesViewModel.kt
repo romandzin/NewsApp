@@ -35,8 +35,8 @@ class SourcesViewModel : ViewModel() {
     private var _unshowError = MutableLiveData<Boolean?>()
     val unshowError = _unshowError
 
-    private val _articlesList = MutableLiveData<ArrayList<Article>>()
-    val articlesList: LiveData<ArrayList<Article>> = _articlesList
+    private val _articlesList = MutableLiveData<ArrayList<Article>?>()
+    val articlesList: LiveData<ArrayList<Article>?> = _articlesList
 
     private var listOfSavedSources: ArrayList<Source> = arrayListOf()
     private var listOfSavedArticles: ArrayList<Article> = arrayListOf()
@@ -136,7 +136,8 @@ class SourcesViewModel : ViewModel() {
                 filteredList.add(item)
             }
         }
-        _articlesList.value = filteredList
+        //_articlesList.value = filteredList
+        postValueAndNotSaveInCache(_articlesList, filteredList)
     }
 
     @SuppressLint("CheckResult")
@@ -189,7 +190,8 @@ class SourcesViewModel : ViewModel() {
         isShowingArticles = true
         lastSource = source
         getHeadlinesNewsWithSource(source, context) { articlesList ->
-            _articlesList.value = articlesList
+            //_articlesList.value = articlesList
+            postValueAndNotSaveInCache(_articlesList, articlesList)
             listOfSavedArticles.addAll(articlesList)
             listOfSavedArticles.distinct()
         }

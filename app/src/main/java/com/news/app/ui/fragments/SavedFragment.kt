@@ -41,6 +41,7 @@ class SavedFragment : Fragment() {
     }
 
     private fun initFragment() {
+        setAdapter(arrayListOf())
         savedViewModel.savedList.observe(viewLifecycleOwner) { articlesList ->
             showLoadedList(articlesList)
         }
@@ -62,7 +63,7 @@ class SavedFragment : Fragment() {
     }
 
     private fun showLoadedList(articlesList: ArrayList<Article>) {
-        setAdapter(articlesList)
+        displaySavedList(articlesList)
         hideLoading()
         binding.refreshLayout.isRefreshing = false
     }
@@ -78,6 +79,7 @@ class SavedFragment : Fragment() {
 
     private fun setSearchModeToFragment() {
         if (this.isResumed) {
+            articlesAdapter.setSearchMode()
             displaySavedList(arrayListOf())
             setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
                 savedViewModel.gotSearchText(bundle.getString(SEARCH_TEXT) ?: "")
@@ -86,6 +88,7 @@ class SavedFragment : Fragment() {
     }
 
     private fun disableSearchMode() {
+        articlesAdapter.disableSearchMode()
         displaySavedList(arrayListOf())
         savedViewModel.refreshView()
     }

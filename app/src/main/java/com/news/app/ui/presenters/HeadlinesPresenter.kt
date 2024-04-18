@@ -24,9 +24,11 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private var category = "general"
     private var isNeedToPaginate = false
     private var isNeedToRefresh = true
+    private var isFiltersEnabled = false
     private var page = 1
     private var pageSize = 8
-    private var articles = arrayListOf<Article>()
+    private var headlinesArticles = arrayListOf<Article>()
+    private var filteredArticles = arrayListOf<Article>()
 
 
     fun init(appDependencies: AppDependenciesProvider) {
@@ -58,9 +60,11 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         }
     }
 
-    fun filter(text: String) {
+    fun searchInArrayByText(text: String) {
         val filteredlist: ArrayList<Article> = ArrayList()
-        for (item in articles) {
+        val arrayListToSearch: ArrayList<Article> = if (isFiltersEnabled) filteredArticles
+        else headlinesArticles
+        for (item in arrayListToSearch) {
             if (item.newsTitle?.lowercase()
                     ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
                     ?.contains(text.lowercase(Locale.getDefault())) == true
@@ -77,10 +81,11 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         category = selectedCategory
         getHeadlinesNews(context) { articlesList ->
             if (isNeedToRefresh) {
+                isFiltersEnabled = false
                 viewState.setDefaultMode()
                 viewState.displayNewsList(articlesList)
                 if (articlesList.size > 8) page = articlesList.size / 8
-                articles = articlesList
+                headlinesArticles = articlesList
                 viewState.hideLoading()
             }
         }
@@ -90,8 +95,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         if (isNeedToPaginate) {
             ++page
             getHeadlinesNews(context) { articlesList ->
-                articles.addAll(articlesList)
-                viewState.displayNewsList(articles)
+                headlinesArticles.addAll(articlesList)
+                viewState.displayNewsList(headlinesArticles)
                 viewState.hideLoading()
             }
         }
@@ -145,8 +150,9 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private fun getFilteredNews(
         filters: Filters,
         context: Context,
-        subscribeAction: (ArrayList<Article>) -> Unit
+        subscribeAction: (ArrayList<Article>) -> Unit //TODO поиск в фильтрах и выход назад нормальный
     ) {
+        isFiltersEnabled = true
         val function = { getFilteredNewsWithError(filters, subscribeAction) }
         dataRepository.getFilteredNews(
             filters.dateFrom,
@@ -196,10 +202,64 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 })
     }
 
+    @SuppressLint("CheckResult")
+    private fun getFilteredNewsFromCache(
+        filters: Filters,
+        subscribeAction: (ArrayList<Article>) -> Unit
+    ) {
+        isFiltersEnabled = true
+        val function = { getFilteredNewsFromCacheForErrorScreen(filters, subscribeAction) }
+        dataRepository.getFilteredNewsInCache(
+            filters.dateFrom,
+            filters.dateTo,
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { e -> e.printStackTrace() }
+            .subscribe({ articleList ->
+                subscribeAction(articleList)
+            },
+                {
+                    viewState.showError(ANOTHER_ERROR, function)
+                })
+    }
+
+    @SuppressLint("CheckResult")
+    private fun getFilteredNewsFromCacheForErrorScreen(
+        filters: Filters,
+        subscribeAction: (ArrayList<Article>) -> Unit
+    ) {
+        dataRepository.getFilteredNewsInCache(
+            filters.dateFrom,
+            filters.dateTo,
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { e -> e.printStackTrace() }
+            .subscribe({ response ->
+                subscribeAction(response)
+                this.viewState.removeError()
+            },
+                {
+                    it.printStackTrace()
+                })
+    }
+
     fun enableFilters(filters: Filters, context: Context) {
-        getFilteredNews(filters, context) { articleArrayList ->
-            viewState.displayNewsList(articleArrayList)
-            viewState.hideLoading()
+        isFiltersEnabled = true
+        if (!observerInternetConnection(context)) {
+            getFilteredNewsFromCache(filters) { articleArrayList ->
+                filteredArticles.addAll(articleArrayList)
+                viewState.displayNewsList(articleArrayList)
+                viewState.hideLoading()
+            }
+        }
+        else {
+            getFilteredNews(filters, context) { articleArrayList ->
+                filteredArticles.addAll(articleArrayList)
+                viewState.displayNewsList(articleArrayList)
+                viewState.hideLoading()
+            }
         }
     }
 

@@ -66,21 +66,18 @@ class FiltersFragment : Fragment() {
         else {
             setToggleButtonListeners()
             setLanguageButtonListeners()
-            binding.calendarIcon.setOnClickListener {
-                prepareDialog()
-            }
+        }
+        binding.calendarIcon.setOnClickListener {
+            prepareDialog()
         }
     }
 
     private fun setNoInternetMode() {
-        binding.dateText.isVisible = false
-        binding.calendarIcon.isVisible = false
-        binding.calendarText.isVisible = false
         binding.toggleButton.isVisible = false
-        binding.languageText.setText(R.string.country)
-        binding.russianLanguageButton.setText(R.string.russia)
-        binding.englishLanguageButton.setText(R.string.englang)
-        binding.deutschLanguageButton.setText(R.string.deutchland)
+        binding.languageText.isVisible = false
+        binding.russianLanguageButton.isVisible = false
+        binding.englishLanguageButton.isVisible = false
+        binding.deutschLanguageButton.isVisible = false
     }
 
     private fun prepareDialog() {
