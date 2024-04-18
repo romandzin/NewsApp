@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,13 +21,11 @@ import com.news.app.R
 import com.news.app.databinding.FragmentFiltersBinding
 import com.news.app.ui.model.Filters
 import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Locale
 
 
 const val APPLY_FILTERS_KEY = "applyFiltersKey"
+const val SEND_FILTERS_TO_ACTIVITY_KEY = "sendFiltersToActivityKey"
 const val SEND_FILTERS_KEY = "sendFiltersKey"
 const val DISABLE_FILTERS_KEY = "disableFilters"
 const val FILTERS_KEY = "filtersKey"
@@ -202,7 +199,7 @@ class FiltersFragment : Fragment() {
 
     private fun setReadyButtonListener() {
         setFragmentResultListener(APPLY_FILTERS_KEY) { _, _ ->
-            setFragmentResult(SEND_FILTERS_KEY,
+            setFragmentResult(SEND_FILTERS_TO_ACTIVITY_KEY,
                 bundleOf(
                     FILTERS_KEY to filters
                 )

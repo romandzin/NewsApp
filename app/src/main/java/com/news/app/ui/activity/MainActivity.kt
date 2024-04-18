@@ -3,7 +3,6 @@ package com.news.app.ui.activity
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -16,23 +15,25 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.R
+import com.news.app.common.Extensions.getParcelableCompat
 import com.news.app.common.Navigator
 import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
-import com.news.app.databinding.FragmentNewsDetailsBinding
 import com.news.app.ui.fragments.APPLY_FILTERS_KEY
 import com.news.app.ui.fragments.DISABLE_FILTERS_KEY
 import com.news.app.ui.fragments.ErrorFragment
+import com.news.app.ui.fragments.FILTERS_KEY
 import com.news.app.ui.fragments.FiltersFragment
 import com.news.app.ui.fragments.HeadLinesFragment
-import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.fragments.NewsDetailsFragment
+import com.news.app.ui.fragments.SEND_FILTERS_KEY
+import com.news.app.ui.fragments.SEND_FILTERS_TO_ACTIVITY_KEY
 import com.news.app.ui.fragments.SavedFragment
 import com.news.app.ui.fragments.SourcesFragment
+import com.news.app.ui.model.Filters
 import com.news.app.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.onEach
-import java.lang.Exception
 
 const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity(), Navigator {
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             isBackPressed = true
+            binding.toolbar.toolbarDefault.appliedFiltersCount.isVisible = false
             val size = supportFragmentManager.backStackEntryCount
             if (searching) {
                 when (supportFragmentManager.fragments.last()::class) {
@@ -82,15 +84,6 @@ class MainActivity : AppCompatActivity(), Navigator {
                 removeError()
                 isBackPressed = false
                 binding.bottomNavView.selectedItemId = binding.bottomNavView.selectedItemId
-                /*try {
-                    if (supportFragmentManager.fragments.size >= 2 && supportFragmentManager.fragments[size - 2]::class == SourcesFragment::class) {
-                        setNewToolbarState(ToolbarState.Default, "Source")
-                        isSourcesWithArticle = false
-                    }
-                }
-                catch (e: Exception) {
-                    e.printStackTrace()
-                } */
             } else if (supportFragmentManager.fragments.last()::class == SourcesFragment::class && isSourcesWithArticle) {
                 val sourcesFragment =
                     supportFragmentManager.findFragmentByTag("sourcesFragment") as SourcesFragment
@@ -100,6 +93,7 @@ class MainActivity : AppCompatActivity(), Navigator {
             } else {
                 if (size == 1) finish()
                 else {
+                    isBackPressed = false
                     val previousCurrent =
                         supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
                     val tagNew = previousCurrent.name
@@ -119,7 +113,6 @@ class MainActivity : AppCompatActivity(), Navigator {
                             binding.bottomNavView.selectedItemId = R.id.saved_page
                         }
                     }
-                    supportFragmentManager.popBackStack()
                 }
             }
             isBackPressed = false
@@ -256,6 +249,13 @@ class MainActivity : AppCompatActivity(), Navigator {
         }
         binding.toolbar.toolbarFilter.completeButton.setOnClickListener {
             goBack()
+            supportFragmentManager.setFragmentResultListener(SEND_FILTERS_TO_ACTIVITY_KEY, this) { _, bundle ->
+                val filters = bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java)
+                setFiltersCount(filters)
+                supportFragmentManager.setFragmentResult(SEND_FILTERS_KEY, bundleOf(
+                    FILTERS_KEY to filters
+                ))
+            }
             if (binding.bottomNavView.selectedItemId != R.id.headlines_page) binding.bottomNavView.selectedItemId = R.id.headlines_page
             supportFragmentManager.setFragmentResult(
                 APPLY_FILTERS_KEY,
@@ -277,6 +277,20 @@ class MainActivity : AppCompatActivity(), Navigator {
         }
         if (!viewModel.isReady && isInternetEnabled) binding.bottomNavView.selectedItemId =
             R.id.headlines_page
+    }
+
+    private fun setFiltersCount(filters: Filters) {
+        val filtersCount = countEnabledFilters(filters)
+        if (filtersCount != 0) binding.toolbar.toolbarDefault.appliedFiltersCount.isVisible = true
+        binding.toolbar.toolbarDefault.appliedFiltersCount.text = filtersCount.toString()
+    }
+
+    private fun countEnabledFilters(filters: Filters): Int {
+        var counter = 0
+        for (i in filters.properties) {
+            if (i.get() != "") counter++
+        }
+        return counter
     }
 
     private fun observeInternetConnection() {
@@ -337,6 +351,7 @@ class MainActivity : AppCompatActivity(), Navigator {
     }
 
     private fun setNewToolbarState(currentToolbarState: ToolbarState, toolbarText: String = "") {
+        binding.toolbar.toolbarDefault.appliedFiltersCount.isVisible = false
         when (currentToolbarState) {
             ToolbarState.Filter -> {
                 binding.toolbar.root.isVisible = true

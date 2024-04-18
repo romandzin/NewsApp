@@ -1,6 +1,7 @@
 package com.news.app.ui.model
 
 import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -9,4 +10,7 @@ data class Filters(
     var dateFrom: String = "",
     var dateTo: String = "",
     var language: String = ""
-) : Parcelable
+) : Parcelable {
+    @IgnoredOnParcel
+    val properties = listOf(::sortByParam, ::dateFrom, ::language)
+}

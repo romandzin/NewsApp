@@ -69,7 +69,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             }
             else disableSearchMode()
         }
-        setFragmentResultListener(SEND_FILTERS_KEY) { _ , bundle ->
+        setFragmentResultListener(SEND_FILTERS_KEY) { _, bundle ->
             headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java), requireContext())
             setAnotherMode()
         }

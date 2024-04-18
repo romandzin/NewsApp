@@ -55,7 +55,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
             when (category) {
                 "general" -> viewState.setSelectedTab(0)
                 "business" -> viewState.setSelectedTab(1)
-                "health" -> viewState.setSelectedTab(2)
+                "technology" -> viewState.setSelectedTab(2)
             }
         }
     }
@@ -150,7 +150,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private fun getFilteredNews(
         filters: Filters,
         context: Context,
-        subscribeAction: (ArrayList<Article>) -> Unit //TODO поиск в фильтрах и выход назад нормальный
+        subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         isFiltersEnabled = true
         val function = { getFilteredNewsWithError(filters, subscribeAction) }
