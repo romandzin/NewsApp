@@ -14,6 +14,9 @@ data class ArticleCacheDbEntity(
     @ColumnInfo("urlToImage")
     val newsIcon: String?,
 
+    @ColumnInfo("url")
+    val url: String?,
+
     @ColumnInfo("publishedAt")
     val publishedAt: String?,
 

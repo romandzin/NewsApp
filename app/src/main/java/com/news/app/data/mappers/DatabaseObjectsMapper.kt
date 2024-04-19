@@ -71,7 +71,8 @@ class DatabaseObjectsMapper @Inject constructor() {
             content = article.content,
             sourceName = article.source.name,
             category = category,
-            sourceId = article.source.id
+            sourceId = article.source.id,
+            url = article.url
         )
     }
 
