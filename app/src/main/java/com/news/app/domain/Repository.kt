@@ -5,10 +5,14 @@ import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.model.Source
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface Repository {
 
     fun getHeadlinesNews(category: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
+
+    fun getHeadlinesNewsByQuery(category: String, query: String): Flowable<ArrayList<Article>>
 
     fun getHeadlinesNewsWithSource(source: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
 

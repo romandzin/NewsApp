@@ -8,12 +8,14 @@ import com.news.app.data.mappers.DatabaseObjectsMapper
 import com.news.app.data.model.db_entities.ArticleCacheDbEntity
 import com.news.app.domain.model.Article
 import com.news.app.data.model.db_entities.ArticleSavedDbEntity
+import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.model.Source
 import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.domain.Repository
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -46,11 +48,22 @@ class RepositoryImpl @Inject constructor(
                 } else {
                     return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
                         .flatMap { response ->
-                            Log.d("tag", response.articles.toString())
                             saveToCache(response.articles, category)
                             Observable.fromArray(response.articles)
                         }
                 }
+            }
+    }
+
+    override fun getHeadlinesNewsByQuery(
+        category: String,
+        query: String
+    ): Flowable<ArrayList<Article>> {
+        return newsServiceApi.getHeadlinesNewsByQuery(category, query)
+            .subscribeOn(Schedulers.io())
+            .onBackpressureDrop()
+            .flatMap {
+                Flowable.fromArray(it.articles)
             }
     }
 

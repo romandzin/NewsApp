@@ -60,19 +60,29 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         }
     }
 
-    fun searchInArrayByText(text: String) {
-        val filteredlist: ArrayList<Article> = ArrayList()
-        val arrayListToSearch: ArrayList<Article> = if (isFiltersEnabled) filteredArticles
-        else headlinesArticles
-        for (item in arrayListToSearch) {
-            if (item.newsTitle?.lowercase()
-                    ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
-                    ?.contains(text.lowercase(Locale.getDefault())) == true
-            ) {
-                filteredlist.add(item)
-            }
+    @SuppressLint("CheckResult")
+    fun searchInArrayByText(text: String, context: Context) {
+        if (observerInternetConnection(context)) {
+            dataRepository.getHeadlinesNewsByQuery(category, text)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { newsList ->
+                    viewState.displayNewsList(newsList)
+                }
         }
-        viewState.displayNewsList(filteredlist)
+        else {
+            val filteredlist: ArrayList<Article> = ArrayList()
+            val arrayListToSearch: ArrayList<Article> = if (isFiltersEnabled) filteredArticles
+            else headlinesArticles
+            for (item in arrayListToSearch) {
+                if (item.newsTitle?.lowercase()
+                        ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
+                        ?.contains(text.lowercase(Locale.getDefault())) == true
+                ) {
+                    filteredlist.add(item)
+                }
+            }
+            viewState.displayNewsList(filteredlist)
+        }
     }
 
     fun tabSelected(selectedCategory: String, context: Context) {
