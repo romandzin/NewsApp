@@ -53,7 +53,7 @@ class SourcesViewModel : ViewModel() {
     }
 
     private fun observeInternetConnection(context: Context): Boolean {
-        var result: Boolean
+        val result: Boolean
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkCapabilities = connectivityManager.activeNetwork ?: return false
@@ -76,7 +76,6 @@ class SourcesViewModel : ViewModel() {
     private fun getSourcesList(context: Context) {
         val function = { getSourcesListForErrorScreen() }
         dataRepository.getSources()
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ sourcesList ->
                 showSourcesListAndSave(sourcesList)
@@ -89,7 +88,6 @@ class SourcesViewModel : ViewModel() {
     @SuppressLint("CheckResult")
     fun getSourcesListForErrorScreen() {
         dataRepository.getSources()
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ sourcesList ->
                 postValueAndNotSaveInCache(_unshowError, true)
@@ -136,7 +134,6 @@ class SourcesViewModel : ViewModel() {
                 filteredList.add(item)
             }
         }
-        //_articlesList.value = filteredList
         postValueAndNotSaveInCache(_articlesList, filteredList)
     }
 
@@ -148,7 +145,6 @@ class SourcesViewModel : ViewModel() {
     ) {
         val function = { getHeadlinesNewsForErrorScreen(sourceCategory, subscribeAction) }
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ response ->
@@ -175,7 +171,6 @@ class SourcesViewModel : ViewModel() {
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         dataRepository.getHeadlinesNewsWithSource(sourceCategory, pageSize, page)
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 postValueAndNotSaveInCache(_unshowError, true)
@@ -190,7 +185,6 @@ class SourcesViewModel : ViewModel() {
         isShowingArticles = true
         lastSource = source
         getHeadlinesNewsWithSource(source, context) { articlesList ->
-            //_articlesList.value = articlesList
             postValueAndNotSaveInCache(_articlesList, articlesList)
             listOfSavedArticles.addAll(articlesList)
             listOfSavedArticles.distinct()

@@ -63,20 +63,28 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             binding.refreshLayout.isRefreshing = false
             headlinesPresenter.refreshView()
         }
+        setFragmentResultListeners()
+        return binding.root
+    }
+
+    private fun setFragmentResultListeners() {
         setFragmentResultListener(SEARCH_ENABLED_KEY) { _, bundle ->
             if (bundle.getBoolean(SEARCH_ENABLED)) {
-                setSearchModeToFragment()
-            }
-            else disableSearchMode()
+                headlinesPresenter.searchEnabledResultGet()
+            } else headlinesPresenter.searchDisabledResultGet()
         }
         setFragmentResultListener(SEND_FILTERS_KEY) { _, bundle ->
-            headlinesPresenter.enableFilters(bundle.getParcelableCompat(FILTERS_KEY, Filters::class.java), requireContext())
+            headlinesPresenter.enableFilters(
+                bundle.getParcelableCompat(
+                    FILTERS_KEY,
+                    Filters::class.java
+                ), requireContext()
+            )
             setAnotherMode()
         }
         setFragmentResultListener(DISABLE_FILTERS_KEY) { _, _ ->
             setDefaultMode()
         }
-        return binding.root
     }
 
     override fun onResume() {
@@ -85,14 +93,14 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
 
-    private fun disableSearchMode() {
+    override fun disableSearchModeInFragment() {
         displayNewsList(arrayListOf())
         setDefaultMode()
         articlesAdapter.disableSearchMode()
         headlinesPresenter.refreshView()
     }
 
-    private fun setSearchModeToFragment() {
+    override fun setSearchModeToFragment() {
         if (this.isResumed) {
             setAnotherMode()
             articlesAdapter.setSearchMode()
@@ -104,13 +112,13 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
     }
 
     private fun setAnotherMode() {
-        headlinesPresenter.searchModeEnabled()
+        headlinesPresenter.anotherModeEnabled()
         binding.tabLayout.isVisible = false
         binding.paginationProgressBar.isVisible = false
     }
 
     override fun setDefaultMode() {
-        headlinesPresenter.searchModeDisabled()
+        headlinesPresenter.defaultModeIsSet()
         binding.tabLayout.isVisible = true
         binding.paginationProgressBar.isVisible = true
     }

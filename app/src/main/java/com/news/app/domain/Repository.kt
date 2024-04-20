@@ -3,6 +3,7 @@ package com.news.app.domain
 import com.news.app.domain.model.Article
 import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.model.Source
+import com.news.app.ui.model.Filters
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
@@ -16,9 +17,9 @@ interface Repository {
 
     fun getHeadlinesNewsWithSource(source: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
 
-    fun getFilteredNews(from: String, to: String, language: String, sortBy: String, pageSize: Int, page: Int): Observable<ArrayList<Article>>
+    fun getFilteredNews(filters: Filters, pageSize: Int, page: Int): Observable<ArrayList<Article>>
 
-    fun getFilteredNewsInCache(from: String, to: String): Observable<ArrayList<Article>>
+    fun getFilteredNewsInCache(filters: Filters): Observable<ArrayList<Article>>
 
     fun getSources(): Observable<ArrayList<Source>>
 

@@ -55,15 +55,18 @@ class SavedViewModel : ViewModel() {
     @SuppressLint("CheckResult")
     private fun getListWithError() {
         dataRepository.getSavedList()
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { savedList ->
-                _unshowError.value = true
-                _unshowError.value = null
+                postValueAndNotSaveInCache(_unshowError, true)
                 savedList.removeIf { it == null }
                 _savedList.value = savedList as ArrayList<Article>
                 listOfSavedArticles.addAll(savedList)
             }
+    }
+
+    private fun <T> postValueAndNotSaveInCache(liveData: MutableLiveData<T>, value: T) {
+        liveData.value = value
+        liveData.value = null
     }
 
     fun gotSearchText(text: String) {

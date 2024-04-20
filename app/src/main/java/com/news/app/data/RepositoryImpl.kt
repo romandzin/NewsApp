@@ -12,6 +12,7 @@ import com.news.app.data.model.network_reponses.ArticlesResponse
 import com.news.app.domain.model.Source
 import com.news.app.data.retrofit.ApiNewsService
 import com.news.app.domain.Repository
+import com.news.app.ui.model.Filters
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -44,12 +45,12 @@ class RepositoryImpl @Inject constructor(
                 if (it.size >= page * pageSize) {
                     val articlesList: ArrayList<Article> =
                         it.map { databaseObjectsMapper.transform(it) } as ArrayList<Article>
-                    return@flatMap Observable.fromArray(articlesList)
+                    return@flatMap Observable.fromArray(articlesList).subscribeOn(Schedulers.io())
                 } else {
                     return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
                         .flatMap { response ->
                             saveToCache(response.articles, category)
-                            Observable.fromArray(response.articles)
+                            Observable.fromArray(response.articles).subscribeOn(Schedulers.io())
                         }
                 }
             }
@@ -63,7 +64,7 @@ class RepositoryImpl @Inject constructor(
             .subscribeOn(Schedulers.io())
             .onBackpressureDrop()
             .flatMap {
-                Flowable.fromArray(it.articles)
+                Flowable.fromArray(it.articles).subscribeOn(Schedulers.io())
             }
     }
 
@@ -81,40 +82,39 @@ class RepositoryImpl @Inject constructor(
                         .flatMap { sourceResponse ->
                             saveArticlesWithSourceToCache(sourceResponse.articles)
                             Observable.fromArray(sourceResponse.articles)
+                                .subscribeOn(Schedulers.io())
                         }
                 } else {
                     val articlesList: ArrayList<Article> =
                         articleBySourceList.map { databaseObjectsMapper.transform(it) } as ArrayList<Article>
-                    return@flatMap Observable.fromArray(articlesList)
+                    return@flatMap Observable.fromArray(articlesList).subscribeOn(Schedulers.io())
                 }
             }
     }
 
     override fun getFilteredNews(
-        from: String,
-        to: String,
-        language: String,
-        sortBy: String,
+        filters: Filters,
         pageSize: Int,
         page: Int
     ): Observable<ArrayList<Article>> {
         return newsServiceApi.getFilteredNews(
-            from = from,
-            to = to,
-            language = language,
-            sortBy = sortBy,
+            from = filters.dateFrom,
+            to = filters.dateTo,
+            language = filters.language,
+            sortBy = filters.sortByParam,
             pageSize = pageSize,
             page = page
         )
             .flatMap { response ->
-                Observable.fromArray(response.articles)
+                Observable.fromArray(response.articles).subscribeOn(Schedulers.io())
             }
     }
 
-    override fun getFilteredNewsInCache(from: String, to: String): Observable<ArrayList<Article>> {
+    override fun getFilteredNewsInCache(filters: Filters): Observable<ArrayList<Article>> {
         return cachedDao.getAllCachedArticles()
+            .subscribeOn(Schedulers.io())
             .flatMap { arrayDbArticlesList ->
-                filterLocalArticles(from, to, arrayDbArticlesList)
+                filterLocalArticles(filters.dateFrom, filters.dateTo, arrayDbArticlesList)
             }
     }
 
@@ -134,7 +134,7 @@ class RepositoryImpl @Inject constructor(
                 databaseObjectsMapper.transform(i)
             )
         }
-        return Observable.fromArray(filteredArticles)
+        return Observable.fromArray(filteredArticles).subscribeOn(Schedulers.io())
     }
 
     private fun isWithinRange(fromDate: Date, toDate: Date, articleDate: Date): Boolean {
@@ -152,11 +152,12 @@ class RepositoryImpl @Inject constructor(
                         .flatMap { sourceResponse ->
                             saveSourcesToCache(sourceResponse.sourcesList)
                             Observable.fromArray(sourceResponse.sourcesList)
+                                .subscribeOn(Schedulers.io())
                         }
                 } else {
                     val sourcesList: ArrayList<Source> =
                         sourceDbList.map { databaseObjectsMapper.transformSource(it) } as ArrayList<Source>
-                    return@flatMap Observable.fromArray(sourcesList)
+                    return@flatMap Observable.fromArray(sourcesList).subscribeOn(Schedulers.io())
                 }
             }
     }
@@ -170,14 +171,14 @@ class RepositoryImpl @Inject constructor(
                 val articlesList = dbEntityList.map { dbElement ->
                     if (checkIfDateIsOld(dbElement.savedDate))
                         databaseObjectsMapper.transform(
-                        dbElement
-                    )
+                            dbElement
+                        )
                     else {
                         oldSavedArticles.add(dbElement)
                         null
                     }
                 } as java.util.ArrayList
-                Flowable.fromArray(articlesList)
+                Flowable.fromArray(articlesList).subscribeOn(Schedulers.io())
             }
             .doOnComplete {
                 for (i in oldSavedArticles) {
@@ -217,6 +218,10 @@ class RepositoryImpl @Inject constructor(
 
     private fun saveArticlesWithSourceToCache(articlesList: java.util.ArrayList<Article>) {
         for (i in articlesList)
-            cachedDao.insertCacheArticleBySource(databaseObjectsMapper.transformToArticleSourceCache(i))
+            cachedDao.insertCacheArticleBySource(
+                databaseObjectsMapper.transformToArticleSourceCache(
+                    i
+                )
+            )
     }
 }

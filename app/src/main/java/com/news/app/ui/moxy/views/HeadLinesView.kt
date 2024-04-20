@@ -26,4 +26,8 @@ interface HeadLinesView: MvpView {
     fun setDefaultMode()
     fun removeError()
 
+    fun setSearchModeToFragment()
+
+    fun disableSearchModeInFragment()
+
 }

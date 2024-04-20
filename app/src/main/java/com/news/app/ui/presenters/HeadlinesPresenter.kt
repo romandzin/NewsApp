@@ -20,7 +20,7 @@ import java.util.Locale
 @InjectViewState
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
-    lateinit var dataRepository: Repository
+    private lateinit var dataRepository: Repository
     private var category = "general"
     private var isNeedToPaginate = false
     private var isNeedToRefresh = true
@@ -36,8 +36,9 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     private fun observerInternetConnection(context: Context): Boolean {
-        var result: Boolean
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val result: Boolean
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkCapabilities = connectivityManager.activeNetwork ?: return false
         val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
         result = when {
@@ -68,21 +69,24 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 .subscribe { newsList ->
                     viewState.displayNewsList(newsList)
                 }
+        } else {
+            searchInCacheByText(text)
         }
-        else {
-            val filteredlist: ArrayList<Article> = ArrayList()
-            val arrayListToSearch: ArrayList<Article> = if (isFiltersEnabled) filteredArticles
-            else headlinesArticles
-            for (item in arrayListToSearch) {
-                if (item.newsTitle?.lowercase()
-                        ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
-                        ?.contains(text.lowercase(Locale.getDefault())) == true
-                ) {
-                    filteredlist.add(item)
-                }
+    }
+
+    private fun searchInCacheByText(text: String) {
+        val filteredList: ArrayList<Article> = ArrayList()
+        val arrayListToSearch: ArrayList<Article> = if (isFiltersEnabled) filteredArticles
+        else headlinesArticles
+        for (item in arrayListToSearch) {
+            if (item.newsTitle?.lowercase()
+                    ?.contains(text.lowercase(Locale.getDefault())) == true || item.source.name?.lowercase()
+                    ?.contains(text.lowercase(Locale.getDefault())) == true
+            ) {
+                filteredList.add(item)
             }
-            viewState.displayNewsList(filteredlist)
         }
+        viewState.displayNewsList(filteredList)
     }
 
     fun tabSelected(selectedCategory: String, context: Context) {
@@ -112,12 +116,12 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         }
     }
 
-    fun searchModeEnabled() {
+    fun anotherModeEnabled() {
         isNeedToPaginate = false
         isNeedToRefresh = false
     }
 
-    fun searchModeDisabled() {
+    fun defaultModeIsSet() {
         isNeedToPaginate = true
         isNeedToRefresh = true
     }
@@ -125,9 +129,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     @SuppressLint("CheckResult")
     private fun getHeadlinesNewsWithErrorScreen(subscribeAction: (ArrayList<Article>) -> Unit) {
         dataRepository.getHeadlinesNews(category, pageSize, page)
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError { e -> e.printStackTrace() }
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
                 this.viewState.removeError()
@@ -141,19 +143,24 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private fun getHeadlinesNews(context: Context, subscribeAction: (ArrayList<Article>) -> Unit) {
         val function = { getHeadlinesNewsWithErrorScreen(subscribeAction) }
         dataRepository.getHeadlinesNews(category, pageSize, page)
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError { e -> e.printStackTrace() }
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
             },
                 {
-                    if (observerInternetConnection(context)) {
-                        it.printStackTrace()
-                        viewState.showError(ANOTHER_ERROR, function)
-                    }
-                    else viewState.showError(NO_INTERNET_ERROR, function)
+                    showError(context, it, function)
                 })
+    }
+
+    private fun showError(
+        context: Context,
+        it: Throwable,
+        function: () -> Unit
+    ) {
+        if (observerInternetConnection(context)) {
+            it.printStackTrace()
+            viewState.showError(ANOTHER_ERROR, function)
+        } else viewState.showError(NO_INTERNET_ERROR, function)
     }
 
     @SuppressLint("CheckResult")
@@ -165,25 +172,17 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         isFiltersEnabled = true
         val function = { getFilteredNewsWithError(filters, subscribeAction) }
         dataRepository.getFilteredNews(
-            filters.dateFrom,
-            filters.dateTo,
-            filters.language,
-            filters.sortByParam,
+            filters,
             pageSize,
             page
         )
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ articleList ->
                 subscribeAction(articleList)
             },
                 {
-                    if (observerInternetConnection(context)) {
-                        it.printStackTrace()
-                        viewState.showError(ANOTHER_ERROR, function)
-                    }
-                    else viewState.showError(NO_INTERNET_ERROR, function)
+                    showError(context, it, function)
                 })
     }
 
@@ -193,14 +192,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         dataRepository.getFilteredNews(
-            filters.dateFrom,
-            filters.dateTo,
-            filters.language,
-            filters.sortByParam,
+            filters,
             pageSize,
             page
         )
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ response ->
@@ -220,10 +215,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         isFiltersEnabled = true
         val function = { getFilteredNewsFromCacheForErrorScreen(filters, subscribeAction) }
         dataRepository.getFilteredNewsInCache(
-            filters.dateFrom,
-            filters.dateTo,
+            filters
         )
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ articleList ->
@@ -240,10 +233,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         dataRepository.getFilteredNewsInCache(
-            filters.dateFrom,
-            filters.dateTo,
+            filters
         )
-            .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ response ->
@@ -263,14 +254,21 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 viewState.displayNewsList(articleArrayList)
                 viewState.hideLoading()
             }
-        }
-        else {
+        } else {
             getFilteredNews(filters, context) { articleArrayList ->
                 filteredArticles.addAll(articleArrayList)
                 viewState.displayNewsList(articleArrayList)
                 viewState.hideLoading()
             }
         }
+    }
+
+    fun searchEnabledResultGet() {
+        viewState.setSearchModeToFragment()
+    }
+
+    fun searchDisabledResultGet() {
+        viewState.disableSearchModeInFragment()
     }
 
 }
