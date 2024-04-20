@@ -1,6 +1,7 @@
 package com.news.app.ui.viewmodels
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,7 +17,7 @@ import java.util.Locale
 
 class SavedViewModel : ViewModel() {
 
-    lateinit var dataRepository: Repository
+    private lateinit var dataRepository: Repository
 
     private val _savedList = MutableLiveData<ArrayList<Article>>()
     private var listOfSavedArticles: ArrayList<Article> = arrayListOf()

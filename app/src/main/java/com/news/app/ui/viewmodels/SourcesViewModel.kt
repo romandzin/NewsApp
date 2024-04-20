@@ -15,12 +15,12 @@ import com.news.app.ui.fragments.ANOTHER_ERROR
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.InAppError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.Locale
 
 class SourcesViewModel : ViewModel() {
 
-    lateinit var dataRepository: Repository
+    private lateinit var dataRepository: Repository
+    private lateinit var context: Context
     private var page = 2
     private var pageSize = 8
     private var isShowingArticles = false
@@ -41,18 +41,19 @@ class SourcesViewModel : ViewModel() {
     private var listOfSavedSources: ArrayList<Source> = arrayListOf()
     private var listOfSavedArticles: ArrayList<Article> = arrayListOf()
 
-    fun init(appDependencies: AppDependenciesProvider, context: Context) {
+    fun init(appDependencies: AppDependenciesProvider) {
         isShowingArticles = false
         dataRepository = appDependencies.provideRepository()
-        getSourcesList(context)
+        context = appDependencies.provideApplicationContext()
+        getSourcesList()
     }
 
-    fun pulledToRefresh(context: Context) {
-        if (isShowingArticles) sourceClicked(lastSource, context)
-        else getSourcesList(context)
+    fun pulledToRefresh() {
+        if (isShowingArticles) sourceClicked(lastSource)
+        else getSourcesList()
     }
 
-    private fun observeInternetConnection(context: Context): Boolean {
+    private fun observeInternetConnection(): Boolean {
         val result: Boolean
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -73,7 +74,7 @@ class SourcesViewModel : ViewModel() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getSourcesList(context: Context) {
+    private fun getSourcesList() {
         val function = { getSourcesListForErrorScreen() }
         dataRepository.getSources()
             .observeOn(AndroidSchedulers.mainThread())
@@ -81,7 +82,7 @@ class SourcesViewModel : ViewModel() {
                 showSourcesListAndSave(sourcesList)
             },
                 {
-                    showError(context, function)
+                    showError(function)
                 })
     }
 
@@ -140,7 +141,6 @@ class SourcesViewModel : ViewModel() {
     @SuppressLint("CheckResult")
     private fun getHeadlinesNewsWithSource(
         sourceCategory: String,
-        context: Context,
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         val function = { getHeadlinesNewsForErrorScreen(sourceCategory, subscribeAction) }
@@ -151,12 +151,12 @@ class SourcesViewModel : ViewModel() {
                 subscribeAction(response)
             },
                 {
-                    showError(context, function)
+                    showError(function)
                 })
     }
 
-    private fun showError(context: Context, function: () -> Unit) {
-        if (observeInternetConnection(context)) {
+    private fun showError(function: () -> Unit) {
+        if (observeInternetConnection()) {
             val error = InAppError(ANOTHER_ERROR, function)
             postValueAndNotSaveInCache(_errorState, error)
         } else {
@@ -181,10 +181,10 @@ class SourcesViewModel : ViewModel() {
                 })
     }
 
-    fun sourceClicked(source: String, context: Context) {
+    fun sourceClicked(source: String) {
         isShowingArticles = true
         lastSource = source
-        getHeadlinesNewsWithSource(source, context) { articlesList ->
+        getHeadlinesNewsWithSource(source) { articlesList ->
             postValueAndNotSaveInCache(_articlesList, articlesList)
             listOfSavedArticles.addAll(articlesList)
             listOfSavedArticles.distinct()

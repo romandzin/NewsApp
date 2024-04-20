@@ -1,5 +1,6 @@
 package com.news.app.core
 
+import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.news.app.data.retrofit.ApiNewsService

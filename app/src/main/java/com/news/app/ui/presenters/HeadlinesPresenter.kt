@@ -12,7 +12,6 @@ import com.news.app.ui.fragments.NO_INTERNET_ERROR
 import com.news.app.ui.model.Filters
 import com.news.app.ui.moxy.views.HeadLinesView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.InjectViewState
 import moxy.MvpPresenter
 import java.util.Locale
@@ -21,6 +20,7 @@ import java.util.Locale
 class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     private lateinit var dataRepository: Repository
+    private lateinit var context: Context
     private var category = "general"
     private var isNeedToPaginate = false
     private var isNeedToRefresh = true
@@ -33,9 +33,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
 
     fun init(appDependencies: AppDependenciesProvider) {
         dataRepository = appDependencies.provideRepository()
+        context = appDependencies.provideApplicationContext()
     }
 
-    private fun observerInternetConnection(context: Context): Boolean {
+    private fun observerInternetConnection(): Boolean {
         val result: Boolean
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -62,8 +63,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
-    fun searchInArrayByText(text: String, context: Context) {
-        if (observerInternetConnection(context)) {
+    fun searchInArrayByText(text: String) {
+        if (observerInternetConnection()) {
             dataRepository.getHeadlinesNewsByQuery(category, text)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { newsList ->
@@ -93,7 +94,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         viewState.showLoading()
         page = 1
         category = selectedCategory
-        getHeadlinesNews(context) { articlesList ->
+        getHeadlinesNews { articlesList ->
             if (isNeedToRefresh) {
                 isFiltersEnabled = false
                 viewState.setDefaultMode()
@@ -108,7 +109,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     fun scrolledToEnd(context: Context) {
         if (isNeedToPaginate) {
             ++page
-            getHeadlinesNews(context) { articlesList ->
+            getHeadlinesNews { articlesList ->
                 headlinesArticles.addAll(articlesList)
                 viewState.displayNewsList(headlinesArticles)
                 viewState.hideLoading()
@@ -140,7 +141,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     }
 
     @SuppressLint("CheckResult")
-    private fun getHeadlinesNews(context: Context, subscribeAction: (ArrayList<Article>) -> Unit) {
+    private fun getHeadlinesNews(subscribeAction: (ArrayList<Article>) -> Unit) {
         val function = { getHeadlinesNewsWithErrorScreen(subscribeAction) }
         dataRepository.getHeadlinesNews(category, pageSize, page)
             .observeOn(AndroidSchedulers.mainThread())
@@ -148,16 +149,15 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 subscribeAction(arrayList)
             },
                 {
-                    showError(context, it, function)
+                    showError(it, function)
                 })
     }
 
     private fun showError(
-        context: Context,
         it: Throwable,
         function: () -> Unit
     ) {
-        if (observerInternetConnection(context)) {
+        if (observerInternetConnection()) {
             it.printStackTrace()
             viewState.showError(ANOTHER_ERROR, function)
         } else viewState.showError(NO_INTERNET_ERROR, function)
@@ -166,7 +166,6 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     @SuppressLint("CheckResult")
     private fun getFilteredNews(
         filters: Filters,
-        context: Context,
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         isFiltersEnabled = true
@@ -182,7 +181,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 subscribeAction(articleList)
             },
                 {
-                    showError(context, it, function)
+                    showError(it, function)
                 })
     }
 
@@ -246,16 +245,16 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 })
     }
 
-    fun enableFilters(filters: Filters, context: Context) {
+    fun enableFilters(filters: Filters) {
         isFiltersEnabled = true
-        if (!observerInternetConnection(context)) {
+        if (!observerInternetConnection()) {
             getFilteredNewsFromCache(filters) { articleArrayList ->
                 filteredArticles.addAll(articleArrayList)
                 viewState.displayNewsList(articleArrayList)
                 viewState.hideLoading()
             }
         } else {
-            getFilteredNews(filters, context) { articleArrayList ->
+            getFilteredNews(filters) { articleArrayList ->
                 filteredArticles.addAll(articleArrayList)
                 viewState.displayNewsList(articleArrayList)
                 viewState.hideLoading()

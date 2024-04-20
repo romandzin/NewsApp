@@ -64,11 +64,11 @@ class SourcesFragment : Fragment() {
             showLoadedList(sourcesList)
         }
         binding.refreshLayout.setOnRefreshListener {
-            sourcesViewModel.pulledToRefresh(requireContext())
+            sourcesViewModel.pulledToRefresh()
         }
         observeError()
         setListenerForSearchMode()
-        sourcesViewModel.init((requireActivity().application as App).provideAppDependenciesProvider(), requireContext())
+        sourcesViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
         showLoading()
     }
 
@@ -101,7 +101,7 @@ class SourcesFragment : Fragment() {
         sourcesViewModel.articlesList.observe(viewLifecycleOwner) { articlesList ->
             if (articlesList != null) showLoadedList(articlesList)
         }
-        sourcesViewModel.sourceClicked(source, requireContext())
+        sourcesViewModel.sourceClicked(source)
     }
 
     private fun setAdapter(sourcesList: ArrayList<Source>) {

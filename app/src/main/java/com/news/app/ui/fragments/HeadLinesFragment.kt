@@ -78,7 +78,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
                 bundle.getParcelableCompat(
                     FILTERS_KEY,
                     Filters::class.java
-                ), requireContext()
+                )
             )
             setAnotherMode()
         }
@@ -106,7 +106,7 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             articlesAdapter.setSearchMode()
             displayNewsList(arrayListOf())
             setFragmentResultListener(SEARCH_TEXT_ENTERED_KEY) { _, bundle ->
-                headlinesPresenter.searchInArrayByText(bundle.getString(SEARCH_TEXT) ?: "", requireContext())
+                headlinesPresenter.searchInArrayByText(bundle.getString(SEARCH_TEXT) ?: "")
             }
         }
     }
