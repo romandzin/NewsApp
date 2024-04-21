@@ -86,4 +86,7 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    implementation("org.orbit-mvi:orbit-core:7.0.1")
+    implementation("org.orbit-mvi:orbit-viewmodel:7.0.1")
 }

@@ -75,7 +75,12 @@ class MainActivity : AppCompatActivity(), Navigator {
                     isBackPressed = false
                     val previousCurrent =
                         supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 2)
-                    val tagNew = previousCurrent.name
+                    var tagNew = previousCurrent.name
+                    if (tagNew == "filterFragment") {
+                        val previousCurrent =
+                            supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 3)
+                        tagNew = previousCurrent.name
+                    }
                     val fragmentNew = supportFragmentManager.findFragmentByTag(tagNew)
                     selectPreviousFragmentOnBottomNavBar(fragmentNew)
                 }

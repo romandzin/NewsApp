@@ -133,7 +133,7 @@
         app:layout_constraintTop_toBottomOf="@id/languageText" />
 
     <View
-        android:id="@+id/light_background"
+        android:id="@+id/dialogBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/light_filter_background"

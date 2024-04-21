@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,11 +16,22 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.news.app.R
+import com.news.app.core.App
 import com.news.app.databinding.FragmentFiltersBinding
 import com.news.app.ui.model.Filters
+import com.news.app.ui.mvi.FiltersSideEffect
+import com.news.app.ui.mvi.FiltersState
+import com.news.app.ui.viewmodels.FiltersViewModel
+import com.news.app.ui.viewmodels.SavedViewModel
+import kotlinx.coroutines.launch
+import org.orbitmvi.orbit.viewmodel.observe
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -29,10 +41,12 @@ const val SEND_FILTERS_TO_ACTIVITY_KEY = "sendFiltersToActivityKey"
 const val SEND_FILTERS_KEY = "sendFiltersKey"
 const val DISABLE_FILTERS_KEY = "disableFilters"
 const val FILTERS_KEY = "filtersKey"
+
 class FiltersFragment : Fragment() {
     private lateinit var binding: FragmentFiltersBinding
-    val filters = Filters()
-    var currentLanguageButton = 0
+    private val filtersViewModel: FiltersViewModel by lazy {
+        ViewModelProvider(this)[FiltersViewModel::class.java]
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,29 +58,116 @@ class FiltersFragment : Fragment() {
         return binding.root
     }
 
-    private fun observeInternetConnection(context: Context): Boolean {
-        var result: Boolean
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCapabilities = connectivityManager.activeNetwork ?: return false
-        val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
-        result = when {
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-            else -> false
+    private fun initView() {
+        filtersViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
+        filtersViewModel.observe(
+            state = ::render,
+            lifecycleOwner = viewLifecycleOwner,
+        )
+        lifecycleScope.launch {
+            filtersViewModel.container.sideEffectFlow.collect { sideEffect ->
+                handleSideEffect(sideEffect)
+            }
         }
-        return result
+        binding.calendarIcon.setOnClickListener {
+            filtersViewModel.calendarIconClicked()
+        }
     }
 
-    private fun initView() {
-        if (!observeInternetConnection(requireContext())) setNoInternetMode()
+    private fun render(state: FiltersState) {
+        if (!state.isInternetEnabled) setNoInternetMode()
         else {
             setToggleButtonListeners()
             setLanguageButtonListeners()
         }
-        binding.calendarIcon.setOnClickListener {
-            prepareDialog()
+
+        if (state.isCalendarShowed) prepareDialog()
+        else binding.dialogBackground.isVisible = false
+
+        if (state.dateTo != "") {
+            binding.calendarText.text = "${state.dateFrom}-${state.dateTo}"
+            binding.calendarText.setTextColor(
+                resources.getColor(
+                    R.color.main_blue,
+                    context?.theme
+                )
+            )
+            binding.calendarIcon.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_selected_calendar
+                )
+            )
         }
+
+        setNoDrawable(binding.sortByCategoryButton1)
+        setNoDrawable(binding.sortByCategoryButton2)
+        setNoDrawable(binding.sortByCategoryButton3)
+
+        when (state.sortCategory) {
+            "popularity" -> {
+                setCheckDrawable(binding.sortByCategoryButton1)
+            }
+
+            "publishedAt" -> {
+                setCheckDrawable(binding.sortByCategoryButton2)
+            }
+
+            "relevancy" -> {
+                setCheckDrawable(binding.sortByCategoryButton3)
+            }
+        }
+
+        setBackgroundToButton(
+            binding.deutschLanguageButton,
+            R.drawable.rounded_corner_button_bg
+        )
+        setBackgroundToButton(
+            binding.englishLanguageButton,
+            R.drawable.rounded_corner_button_bg
+        )
+        setBackgroundToButton(
+            binding.russianLanguageButton,
+            R.drawable.rounded_corner_button_bg
+        )
+        when (state.language) {
+            "ru" -> {
+                setBackgroundToButton(
+                    binding.russianLanguageButton,
+                    R.drawable.rounded_corner_selected_button_bg
+                )
+            }
+
+            "en" -> {
+                setBackgroundToButton(
+                    binding.englishLanguageButton,
+                    R.drawable.rounded_corner_selected_button_bg
+                )
+            }
+
+            "de" -> {
+                setBackgroundToButton(
+                    binding.deutschLanguageButton,
+                    R.drawable.rounded_corner_selected_button_bg
+                )
+            }
+        }
+    }
+
+    private fun handleSideEffect(sideEffect: FiltersSideEffect) {
+        Log.d("tag", "handleSide")
+        when (sideEffect) {
+            is FiltersSideEffect.ApplyFilters -> applyFilters(sideEffect.filters)
+        }
+    }
+
+    private fun applyFilters(filters: Filters) {
+        setFragmentResult(
+            SEND_FILTERS_TO_ACTIVITY_KEY,
+            bundleOf(
+                FILTERS_KEY to filters
+            )
+        )
     }
 
     private fun setNoInternetMode() {
@@ -78,7 +179,7 @@ class FiltersFragment : Fragment() {
     }
 
     private fun prepareDialog() {
-        binding.lightBackground.isVisible = true
+        binding.dialogBackground.isVisible = true
         val dateRangePicker =
             MaterialDatePicker.Builder.dateRangePicker()
                 .setTitleText("Select date")
@@ -94,85 +195,39 @@ class FiltersFragment : Fragment() {
 
         dateRangePicker.show(parentFragmentManager, "datePicker")
         dateRangePicker.addOnDismissListener {
-            binding.lightBackground.isVisible = false
+            filtersViewModel.calendarDismissed()
         }
         dateRangePicker.addOnPositiveButtonClickListener {
-            binding.lightBackground.isVisible = false
-            val firstDate = getDate(dateRangePicker.selection!!.first, "MMM dd")!!
-            filters.dateFrom = getDate(dateRangePicker.selection!!.first, "yyyy-MM-dd")!!
-            val secondDate = getDate(dateRangePicker.selection!!.second, "MMM dd, YYYY")!!
-            filters.dateTo = getDate(dateRangePicker.selection!!.second, "yyyy-MM-dd")!!
-            binding.calendarText.text = "$firstDate-$secondDate"
-            binding.calendarText.setTextColor(
-                resources.getColor(
-                    R.color.main_blue,
-                    context?.theme
-                )
-            )
-            binding.calendarIcon.setImageDrawable(
-                AppCompatResources.getDrawable(
-                    requireContext(),
-                    R.drawable.ic_selected_calendar
-                )
+            binding.dialogBackground.isVisible = false
+            filtersViewModel.calendarPositiveButtonClicked(
+                dateRangePicker.selection!!.first,
+                dateRangePicker.selection!!.second
             )
         }
     }
 
-    private fun getDate(milliSeconds: Long, dateFormat: String?): String? {
-        val formatter = SimpleDateFormat(dateFormat)
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.timeInMillis = milliSeconds
-        return formatter.format(calendar.time)
-    }
 
     private fun setToggleButtonListeners() {
         binding.sortByCategoryButton1.setOnClickListener {
-            if (binding.sortByCategoryButton1.isChecked) setCheckDrawable(binding.sortByCategoryButton1)
-            else setNoDrawable(binding.sortByCategoryButton1)
-            setNoDrawable(binding.sortByCategoryButton2)
-            setNoDrawable(binding.sortByCategoryButton3)
-            filters.sortByParam = "popularity"
+            filtersViewModel.sortByCategoryButtonClicked("popularity")
         }
         binding.sortByCategoryButton2.setOnClickListener {
-            if (binding.sortByCategoryButton2.isChecked) setCheckDrawable(binding.sortByCategoryButton2)
-            else setNoDrawable(binding.sortByCategoryButton2)
-            setNoDrawable(binding.sortByCategoryButton1)
-            setNoDrawable(binding.sortByCategoryButton3)
-            filters.sortByParam = "publishedAt"
+            filtersViewModel.sortByCategoryButtonClicked("publishedAt")
         }
         binding.sortByCategoryButton3.setOnClickListener {
-            if (binding.sortByCategoryButton3.isChecked) setCheckDrawable(binding.sortByCategoryButton3)
-            else setNoDrawable(binding.sortByCategoryButton3)
-            setNoDrawable(binding.sortByCategoryButton2)
-            setNoDrawable(binding.sortByCategoryButton1)
-            filters.sortByParam = "relevancy"
+            filtersViewModel.sortByCategoryButtonClicked("relevancy")
         }
     }
 
     private fun setLanguageButtonListeners() {
         binding.russianLanguageButton.setOnClickListener {
-            if (currentLanguageButton == 1) setBackgroundToButton(binding.russianLanguageButton, R.drawable.rounded_corner_button_bg)
-            else setBackgroundToButton(binding.russianLanguageButton, R.drawable.rounded_corner_selected_button_bg)
-            setBackgroundToButton(binding.englishLanguageButton, R.drawable.rounded_corner_button_bg)
-            setBackgroundToButton(binding.deutschLanguageButton, R.drawable.rounded_corner_button_bg)
-            currentLanguageButton = 1
-            filters.language = "ru"
+            filtersViewModel.languageButtonClicked("ru")
         }
         binding.englishLanguageButton.setOnClickListener {
-            if (currentLanguageButton == 2) setBackgroundToButton(binding.englishLanguageButton, R.drawable.rounded_corner_button_bg)
-            else setBackgroundToButton(binding.englishLanguageButton, R.drawable.rounded_corner_selected_button_bg)
-            setBackgroundToButton(binding.russianLanguageButton, R.drawable.rounded_corner_button_bg)
-            setBackgroundToButton(binding.deutschLanguageButton, R.drawable.rounded_corner_button_bg)
-            currentLanguageButton = 2
-            filters.language = "en"
+            filtersViewModel.languageButtonClicked("en")
         }
         binding.deutschLanguageButton.setOnClickListener {
-            if (currentLanguageButton == 3) setBackgroundToButton(binding.deutschLanguageButton, R.drawable.rounded_corner_button_bg)
-            else setBackgroundToButton(binding.deutschLanguageButton, R.drawable.rounded_corner_selected_button_bg)
-            setBackgroundToButton(binding.englishLanguageButton, R.drawable.rounded_corner_button_bg)
-            setBackgroundToButton(binding.russianLanguageButton, R.drawable.rounded_corner_button_bg)
-            currentLanguageButton = 3
-            filters.language = "de"
+            filtersViewModel.languageButtonClicked("de")
         }
     }
 
@@ -199,11 +254,7 @@ class FiltersFragment : Fragment() {
 
     private fun setReadyButtonListener() {
         setFragmentResultListener(APPLY_FILTERS_KEY) { _, _ ->
-            setFragmentResult(SEND_FILTERS_TO_ACTIVITY_KEY,
-                bundleOf(
-                    FILTERS_KEY to filters
-                )
-            )
+            filtersViewModel.applyFilters()
         }
     }
 
