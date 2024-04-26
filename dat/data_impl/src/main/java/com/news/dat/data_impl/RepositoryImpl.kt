@@ -117,7 +117,7 @@ class RepositoryImpl @Inject constructor(
             }
     }
 
-    private fun filterLocalArticles(
+    fun filterLocalArticles(
         from: String,
         to: String,
         arrayDbArticlesList: List<ArticleCacheDbEntity>

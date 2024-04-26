@@ -1,15 +1,20 @@
 package com.news.dat.data_impl.mappers
 
+import com.news.dat.data_impl.model.db_entities.ArticleCacheDbEntity
+import com.news.dat.data_impl.model.db_entities.ArticleSavedDbEntity
+import com.news.dat.data_impl.model.db_entities.ArticleSourceCacheDbEntity
+import com.news.data.data_api.model.Article
+import com.news.data.data_api.model.Source
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class DatabaseObjectsMapperTest : FunSpec({
 
-    val databaseObjectsMapper = com.news.data.mappers.DatabaseObjectsMapper()
+    val databaseObjectsMapper = DatabaseObjectsMapper()
 
     test("transformArticleSavedToArticle") {
         val articleSavedDbEntity =
-            com.news.data.model.db_entities.ArticleSavedDbEntity(
+            ArticleSavedDbEntity(
                 "title1",
                 "iconUrl",
                 "13 friday",
@@ -19,8 +24,8 @@ class DatabaseObjectsMapperTest : FunSpec({
                 "12"
             )
         val baseArticle = databaseObjectsMapper.transform(articleSavedDbEntity)
-        baseArticle.sourceDomainModel.id shouldBe articleSavedDbEntity.sourceId
-        baseArticle.sourceDomainModel.name shouldBe articleSavedDbEntity.sourceName
+        baseArticle.source.id shouldBe articleSavedDbEntity.sourceId
+        baseArticle.source.name shouldBe articleSavedDbEntity.sourceName
         baseArticle.newsTitle shouldBe articleSavedDbEntity.newsTitle
         baseArticle.newsIcon shouldBe articleSavedDbEntity.newsIcon
         baseArticle.publishedAt shouldBe articleSavedDbEntity.publishedAt
@@ -29,7 +34,7 @@ class DatabaseObjectsMapperTest : FunSpec({
 
     test("transformArticleCacheToArticle") {
         val articleCacheDbEntity =
-            com.news.data.model.db_entities.ArticleCacheDbEntity(
+            ArticleCacheDbEntity(
                 "title1",
                 "iconUrl",
                 "url to article",
@@ -37,11 +42,12 @@ class DatabaseObjectsMapperTest : FunSpec({
                 "super context",
                 "Bbc",
                 "new",
-                "bbc"
+                "bbc",
+                1
             )
         val baseArticle = databaseObjectsMapper.transform(articleCacheDbEntity)
-        baseArticle.sourceDomainModel.id shouldBe articleCacheDbEntity.sourceId
-        baseArticle.sourceDomainModel.name shouldBe articleCacheDbEntity.sourceName
+        baseArticle.source.id shouldBe articleCacheDbEntity.sourceId
+        baseArticle.source.name shouldBe articleCacheDbEntity.sourceName
         baseArticle.newsTitle shouldBe articleCacheDbEntity.newsTitle
         baseArticle.newsIcon shouldBe articleCacheDbEntity.newsIcon
         baseArticle.publishedAt shouldBe articleCacheDbEntity.publishedAt
@@ -50,7 +56,7 @@ class DatabaseObjectsMapperTest : FunSpec({
 
     test("transformArticleSourceCacheToArticle") {
         val articleSourceCacheDbEntity =
-            com.news.data.model.db_entities.ArticleSourceCacheDbEntity(
+            ArticleSourceCacheDbEntity(
                 "title1",
                 "iconUrl",
                 "13 friday",
@@ -59,8 +65,8 @@ class DatabaseObjectsMapperTest : FunSpec({
                 "bbc",
             )
         val baseArticle = databaseObjectsMapper.transform(articleSourceCacheDbEntity)
-        baseArticle.sourceDomainModel.id shouldBe articleSourceCacheDbEntity.sourceId
-        baseArticle.sourceDomainModel.name shouldBe articleSourceCacheDbEntity.sourceName
+        baseArticle.source.id shouldBe articleSourceCacheDbEntity.sourceId
+        baseArticle.source.name shouldBe articleSourceCacheDbEntity.sourceName
         baseArticle.newsTitle shouldBe articleSourceCacheDbEntity.newsTitle
         baseArticle.newsIcon shouldBe articleSourceCacheDbEntity.newsIcon
         baseArticle.publishedAt shouldBe articleSourceCacheDbEntity.publishedAt
@@ -68,8 +74,8 @@ class DatabaseObjectsMapperTest : FunSpec({
     }
 
     test("transformToArticleSourceCache") {
-        val article = com.news.domain.model.ArticleDomainModel(
-            com.news.domain.model.SourceDomainModel("bbc", "BBC"),
+        val article = Article(
+            Source("bbc", "BBC"),
             "title",
             "icon url",
             "13 friday",
@@ -77,8 +83,8 @@ class DatabaseObjectsMapperTest : FunSpec({
             "article url",
         )
         val articleSourceCacheDbEntity = databaseObjectsMapper.transformToArticleSourceCache(article)
-        articleSourceCacheDbEntity.sourceId shouldBe article.sourceDomainModel.id
-        articleSourceCacheDbEntity.sourceName shouldBe article.sourceDomainModel.name
+        articleSourceCacheDbEntity.sourceId shouldBe article.source.id
+        articleSourceCacheDbEntity.sourceName shouldBe article.source.name
         articleSourceCacheDbEntity.newsTitle shouldBe article.newsTitle
         articleSourceCacheDbEntity.newsIcon shouldBe article.newsIcon
         articleSourceCacheDbEntity.publishedAt shouldBe article.publishedAt
@@ -86,8 +92,8 @@ class DatabaseObjectsMapperTest : FunSpec({
     }
 
     test("transformArticleWithDateToSavedArticle") {
-        val article = com.news.domain.model.ArticleDomainModel(
-            com.news.domain.model.SourceDomainModel("bbc", "BBC"),
+        val article = Article(
+            Source("bbc", "BBC"),
             "title",
             "icon url",
             "13 friday",
@@ -96,8 +102,8 @@ class DatabaseObjectsMapperTest : FunSpec({
         )
         val savedDate = "19 April 2024"
         val articleSavedDbEntity = databaseObjectsMapper.transform(article, savedDate)
-        articleSavedDbEntity.sourceId shouldBe article.sourceDomainModel.id
-        articleSavedDbEntity.sourceName shouldBe article.sourceDomainModel.name
+        articleSavedDbEntity.sourceId shouldBe article.source.id
+        articleSavedDbEntity.sourceName shouldBe article.source.name
         articleSavedDbEntity.newsTitle shouldBe article.newsTitle
         articleSavedDbEntity.newsIcon shouldBe article.newsIcon
         articleSavedDbEntity.publishedAt shouldBe article.publishedAt
@@ -106,8 +112,8 @@ class DatabaseObjectsMapperTest : FunSpec({
     }
 
     test("transformToCache") {
-        val article = com.news.domain.model.ArticleDomainModel(
-            com.news.domain.model.SourceDomainModel("bbc", "BBC"),
+        val article = Article(
+            Source("bbc", "BBC"),
             "title",
             "icon url",
             "13 friday",
@@ -115,19 +121,20 @@ class DatabaseObjectsMapperTest : FunSpec({
             "article url",
         )
         val category = "popular"
-        val articleCacheDbEntity = databaseObjectsMapper.transformToCache(article, category)
-        articleCacheDbEntity.sourceId shouldBe article.sourceDomainModel.id
-        articleCacheDbEntity.sourceName shouldBe article.sourceDomainModel.name
+        val articleCacheDbEntity = databaseObjectsMapper.transformToCache(article, category, 1)
+        articleCacheDbEntity.sourceId shouldBe article.source.id
+        articleCacheDbEntity.sourceName shouldBe article.source.name
         articleCacheDbEntity.newsTitle shouldBe article.newsTitle
         articleCacheDbEntity.newsIcon shouldBe article.newsIcon
         articleCacheDbEntity.publishedAt shouldBe article.publishedAt
         articleCacheDbEntity.content shouldBe article.content
         articleCacheDbEntity.url shouldBe article.url
         articleCacheDbEntity.category shouldBe category
+        articleCacheDbEntity.page shouldBe 1
     }
 
     test("transformSourceFromDbEntityToSource") {
-        val sourceDbEntity = com.news.data.model.db_entities.SourceDbEntity(
+        val sourceDbEntity = Source(
             "id",
             "name",
             "icon url",
@@ -145,7 +152,7 @@ class DatabaseObjectsMapperTest : FunSpec({
     }
 
     test("transformSourceFromSourceToDbEntity") {
-        val sourceDomainModel = com.news.domain.model.SourceDomainModel(
+        val sourceDomainModel = Source(
             "id",
             "name",
             "icon url",

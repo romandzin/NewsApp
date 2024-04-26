@@ -1,13 +1,12 @@
 package com.news.dat.data_impl
 
-import com.news.data.RepositoryImpl
-import com.news.data.db.CachedDao
-import com.news.data.db.SavedDao
-import com.news.data.mappers.DatabaseObjectsMapper
-import com.news.data.model.db_entities.ArticleCacheDbEntity
-import com.news.data.model.db_entities.ArticleSourceCacheDbEntity
-import com.news.data.model.db_entities.SourceDbEntity
-import com.news.data.retrofit.ApiNewsService
+import com.news.dat.data_impl.db.CachedDao
+import com.news.dat.data_impl.db.SavedDao
+import com.news.dat.data_impl.mappers.DatabaseObjectsMapper
+import com.news.dat.data_impl.model.db_entities.ArticleCacheDbEntity
+import com.news.dat.data_impl.model.db_entities.ArticleSourceCacheDbEntity
+import com.news.dat.data_impl.model.db_entities.SourceDbEntity
+import com.news.dat.data_impl.retrofit.ApiNewsService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -21,18 +20,18 @@ class RepositoryImplTest : BehaviorSpec({
 
     val fromString = "2024-04-12"
     val toString = "2024-04-27"
-    val newsServiceApi = mockk<com.news.data.retrofit.ApiNewsService>()
-    val savedDao = mockk<com.news.data.db.SavedDao>()
-    val cachedDao = spyk<com.news.data.db.CachedDao>()
-    val databaseObjectsMapper = com.news.data.mappers.DatabaseObjectsMapper()
+    val newsServiceApi = mockk<ApiNewsService>()
+    val savedDao = mockk<SavedDao>()
+    val cachedDao = spyk<CachedDao>()
+    val databaseObjectsMapper = DatabaseObjectsMapper()
     val repositoryImpl = spyk(
-        com.news.data.RepositoryImpl(
+        RepositoryImpl(
             newsServiceApi,
             savedDao,
             cachedDao,
             databaseObjectsMapper
         ), recordPrivateCalls = true)
-    val articleCacheDb = com.news.data.model.db_entities.ArticleCacheDbEntity(
+    val articleCacheDb = ArticleCacheDbEntity(
         "title1",
         null,
         null,
@@ -40,13 +39,14 @@ class RepositoryImplTest : BehaviorSpec({
         null,
         null,
         "",
-        null
+        null,
+        1
     )
 
     Given("before calling filter") {
         val arrayDbArticlesList = listOf(
             articleCacheDb,
-            com.news.data.model.db_entities.ArticleCacheDbEntity(
+            ArticleCacheDbEntity(
                 "title2",
                 null,
                 null,
@@ -54,7 +54,8 @@ class RepositoryImplTest : BehaviorSpec({
                 null,
                 null,
                 "",
-                null
+                null,
+                1
             )
         )
         Then("local filters should return array with one element") {
@@ -89,33 +90,16 @@ class RepositoryImplTest : BehaviorSpec({
         }
     }
 
-    /*Given("getHeadlinesNews is called and get news from cache") {
-        every { cachedDao.getCachedArticlesByCategory("general") } returns Observable.fromArray(
-            arrayListOf(articleCacheDb)
-        )
-        val page = 1
-        val pageSize = 1
-        Then("check if we get news from cache when request page with news that is lower than our all cached news") {
-            cachedDao.getCachedArticlesByCategory("general").subscribe {
-                if (it.size >= page * pageSize) {
-                    val articlesList: ArrayList<Article> =
-                        it.map { databaseObjectsMapper.transform(it) } as ArrayList<Article>
-                    articlesList.size shouldBe 1
-                } else assert(false)
-            }
-        }
-    } */
-
     Given("getHeadlinesNews is called and get news from internet") {
-        every { cachedDao.getCachedArticlesByCategory("general") } returns Observable.fromArray(
+        every { cachedDao.getCachedArticlesByCategory("general", 1) } returns Observable.fromArray(
             arrayListOf(articleCacheDb)
         )
         val page = 1
         val pageSize = 8
         Then("check if we get news from internet when request page with news that is bigger than our all cached news") {
-            cachedDao.getCachedArticlesByCategory("general").subscribe {
+            cachedDao.getCachedArticlesByCategory("general", 1).subscribe {
                 if (it.size < page * pageSize) {
-                    repositoryImpl.saveToCache(arrayListOf(), "general")
+                    repositoryImpl.saveToCache(arrayListOf(), "general", 1)
                     assert(true)
                 } else assert(false)
             }
@@ -140,7 +124,7 @@ class RepositoryImplTest : BehaviorSpec({
     Given("test subscribe in getCachedArticleBySource when get not empty list") {
         every { cachedDao.getCachedArticlesBySource("source") } returns Observable.fromArray(
             arrayListOf(
-                com.news.data.model.db_entities.ArticleSourceCacheDbEntity(
+                ArticleSourceCacheDbEntity(
                     "",
                     null,
                     null,
@@ -163,7 +147,7 @@ class RepositoryImplTest : BehaviorSpec({
 
     Given("test subscribe in getCachedSource when get not empty list") {
         every { cachedDao.getCachedSources() } returns Observable.fromArray(
-            arrayListOf(com.news.data.model.db_entities.SourceDbEntity("", ""))
+            arrayListOf(SourceDbEntity("", ""))
         )
         Then("should assert true") {
             cachedDao.getCachedSources().subscribe { cachedSourceList ->
@@ -190,20 +174,4 @@ class RepositoryImplTest : BehaviorSpec({
             }
         }
     }
-
-
-    /* fun isWithinRange(fromDate: Date, toDate: Date, articleDate: Date): Boolean {
-         return !(articleDate.before(fromDate) || articleDate.after(toDate))
-     }
-
-     fun checkIfDateIsFresh(articleSavedDateString: String?): Boolean {
-         val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-         val articleSavedData = sdf.parse(articleSavedDateString)
-         return if (articleSavedData != null) {
-             val timeDifference = Calendar.getInstance().time.time - articleSavedData.time
-             val daysDiff = TimeUnit.MILLISECONDS.toDays(timeDifference)
-             Log.d("tag", daysDiff.toString())
-             daysDiff < 14L
-         } else false
-     } */
 })
