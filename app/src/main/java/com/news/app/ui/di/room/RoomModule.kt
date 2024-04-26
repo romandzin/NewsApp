@@ -1,8 +1,8 @@
 package com.news.app.ui.di.room
 
-import com.news.app.data.db.CachedDao
-import com.news.app.data.db.DbObject
-import com.news.app.data.db.SavedDao
+import com.news.dat.data_impl.db.CachedDao
+import com.news.dat.data_impl.db.DbObject
+import com.news.dat.data_impl.db.SavedDao
 import dagger.Module
 import dagger.Provides
 

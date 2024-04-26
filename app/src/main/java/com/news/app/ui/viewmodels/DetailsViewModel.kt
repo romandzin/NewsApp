@@ -7,17 +7,14 @@ import android.text.style.ClickableSpan
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.news.app.core.AppDependenciesProvider
-import com.news.app.domain.Repository
-import com.news.app.domain.model.Article
+import com.news.data.data_api.Repository
+import com.news.data.data_api.model.Article
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -57,7 +54,7 @@ class DetailsViewModel : ViewModel() {
         }
     }
 
-    fun init(appDependencies: AppDependenciesProvider) {
+    fun init(appDependencies: com.news.core.AppDependenciesProvider) {
         dataRepository = appDependencies.provideRepository()
     }
 
@@ -70,10 +67,10 @@ class DetailsViewModel : ViewModel() {
 
     private fun createClickableText(article: Article) {
         if (article.content != null) {
-            val separated = article.content.split("[+")
+            val separated = article.content!!.split("[+")
             val clickable = "[+${separated[1]}"
-            val ss = SpannableString(article.content)
-            val clickableSpan1: ClickableSpan = object : ClickableSpan() {
+            val spannableString = SpannableString(article.content)
+            val clickableSpan: ClickableSpan = object : ClickableSpan() {
                 override fun onClick(widget: View) {
                     viewModelScope.launch {
                         if (article.url == "") url.emit("https://google.com")
@@ -81,14 +78,14 @@ class DetailsViewModel : ViewModel() {
                     }
                 }
             }
-            ss.setSpan(clickableSpan1, separated[0].length, separated[0].length + clickable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            clickableText.value = ss
+            spannableString.setSpan(clickableSpan, separated[0].length, separated[0].length + clickable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            clickableText.value = spannableString
         }
     }
 
     private fun getCurrentDate(): String {
-        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-        return sdf.format(Calendar.getInstance().time)
+        val simpleDateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        return simpleDateFormat.format(Calendar.getInstance().time)
     }
 
     @SuppressLint("CheckResult")

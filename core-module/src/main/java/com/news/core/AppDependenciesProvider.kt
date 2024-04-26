@@ -1,0 +1,3 @@
+package com.news.core
+
+interface AppDependenciesProvider: NetworkProvider, ApplicationContextProvider

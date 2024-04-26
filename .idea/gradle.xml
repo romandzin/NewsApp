@@ -10,6 +10,13 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/core-module" />
+            <option value="$PROJECT_DIR$/dat" />
+            <option value="$PROJECT_DIR$/dat/data-api" />
+            <option value="$PROJECT_DIR$/dat/data_impl" />
+            <option value="$PROJECT_DIR$/feature-headlines" />
+            <option value="$PROJECT_DIR$/feature-saved" />
+            <option value="$PROJECT_DIR$/feature-source" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

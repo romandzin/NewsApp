@@ -7,24 +7,23 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.news.app.R
 import com.news.app.common.Extensions.getParcelableCompat
-import com.news.app.common.Navigator
-import com.news.app.core.App
-import com.news.app.domain.model.Article
+import com.news.core.App
 import com.news.app.databinding.FragmentNewsDetailsBinding
 import com.news.app.ui.di.details.DaggerDetailsComponent
 import com.news.app.ui.viewmodels.DetailsViewModel
+import com.news.core.MainAppNavigator
+import com.news.data.data_api.model.Article
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -36,8 +35,8 @@ class NewsDetailsFragment : Fragment() {
     @Inject
     lateinit var detailsViewModel: DetailsViewModel
     private lateinit var binding: FragmentNewsDetailsBinding
-    private val navigator by lazy {
-        requireActivity() as Navigator
+    private val mainAppNavigator by lazy {
+        requireActivity() as MainAppNavigator
     }
 
     override fun onCreateView(
@@ -111,11 +110,11 @@ class NewsDetailsFragment : Fragment() {
             detailsViewModel.bookmarkButtonClicked()
         }
         binding.backButton.setOnClickListener {
-            navigator.goBack()
+            mainAppNavigator.goBack()
         }
     }
 
-    private fun getBundleData(): Article? {
+        private fun getBundleData(): Article? {
         val bundle = this.arguments
         if (bundle != null) {
             return bundle.getParcelableCompat(NEWS_KEY, Article::class.java)
@@ -130,7 +129,7 @@ class NewsDetailsFragment : Fragment() {
         binding.toolbar.title = news.newsTitle
         binding.collapsing.title = news.newsTitle
         if (news.newsIcon == null) loadPhoto("https://placebear.com/640/360")
-        else loadPhoto(news.newsIcon)
+        else loadPhoto(news.newsIcon!!)
     }
 
     private fun setContent(text: SpannableString) {

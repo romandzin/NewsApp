@@ -1,7 +1,7 @@
 package com.news.app.ui.di.common
 
-import com.news.app.data.RepositoryImpl
-import com.news.app.domain.Repository
+import com.news.dat.data_impl.RepositoryImpl
+import com.news.data.data_api.Repository
 import dagger.Binds
 import dagger.Module
 

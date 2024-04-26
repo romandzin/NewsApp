@@ -15,4 +15,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "NewsApp"
 include(":app")
- 
+include(":feature-saved")
+include(":feature-source")
+include(":feature-headlines")
+include(":core-module")
+include(":dat:data-api")
+include(":dat:data_impl")

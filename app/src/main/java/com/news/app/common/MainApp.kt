@@ -1,8 +1,8 @@
 package com.news.app.common
 
 import android.app.Application
-import com.news.app.core.App
-import com.news.app.core.AppDependenciesProvider
+import com.news.core.App
+import com.news.core.AppDependenciesProvider
 import com.news.app.ui.di.common.AppComponent
 
 class MainApp: Application(), App {

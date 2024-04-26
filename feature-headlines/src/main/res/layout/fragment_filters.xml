@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragment.FiltersFragment">
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleButton"
+        style="?attr/materialButtonToggleGroupStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sortByCategoryButton1"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:backgroundTint="@drawable/toggle_button_checked_color"
+            android:checkable="true"
+            android:drawableTint="@color/black"
+            android:text="@string/popular"
+            app:toggleCheckedStateOnClick="true" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sortByCategoryButton2"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:backgroundTint="@drawable/toggle_button_checked_color"
+            android:checkable="true"
+            android:drawableTint="@color/black"
+            android:text="@string/new_text"
+            app:toggleCheckedStateOnClick="true" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sortByCategoryButton3"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:backgroundTint="@drawable/toggle_button_checked_color"
+            android:checkable="true"
+            android:drawableTint="@color/black"
+            android:text="@string/relevant"
+            app:toggleCheckedStateOnClick="true" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="@string/date"
+        android:layout_marginStart="20dp"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toggleButton" />
+
+    <ImageView
+        android:id="@+id/calendar_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="28dp"
+        android:src="@drawable/ic_calendar"
+        app:layout_constraintBottom_toBottomOf="@id/dateText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/dateText" />
+
+    <TextView
+        android:id="@+id/calendarText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="12dp"
+        android:text="@string/choose_date"
+        android:textColor="@color/light_gray"
+        app:layout_constraintEnd_toStartOf="@id/calendar_icon"
+        app:layout_constraintTop_toBottomOf="@id/toggleButton" />
+
+    <TextView
+        android:id="@+id/languageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="@string/language"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toStartOf="@id/toggleButton"
+        app:layout_constraintTop_toBottomOf="@id/dateText" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/russianLanguageButton"
+        android:layout_width="79dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_corner_button_bg"
+        android:text="@string/russian"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toStartOf="@id/languageText"
+        app:layout_constraintTop_toBottomOf="@id/languageText" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/englishLanguageButton"
+        android:layout_width="79dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_corner_button_bg"
+        android:text="@string/english"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toEndOf="@id/russianLanguageButton"
+        app:layout_constraintTop_toBottomOf="@id/languageText" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/deutschLanguageButton"
+        android:layout_width="79dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_corner_button_bg"
+        android:text="@string/deutsch"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toEndOf="@id/englishLanguageButton"
+        app:layout_constraintTop_toBottomOf="@id/languageText" />
+
+    <View
+        android:id="@+id/dialogBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/light_filter_background"
+        android:visibility="gone"
+        android:elevation="2dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,7 +1,7 @@
 package com.news.app.ui.di.retrofit
 
-import com.news.app.data.retrofit.ApiNewsService
-import com.news.app.data.retrofit.RetrofitObj
+import com.news.dat.data_impl.retrofit.ApiNewsService
+import com.news.dat.data_impl.retrofit.RetrofitObj
 import dagger.Module
 import dagger.Provides
 

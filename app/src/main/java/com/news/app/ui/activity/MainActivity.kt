@@ -18,31 +18,30 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.news.app.R
 import com.news.app.common.Extensions.getParcelableCompat
-import com.news.app.common.Navigator
-import com.news.app.common.NetworkConnectivityObserver
 import com.news.app.common.ToolbarState
 import com.news.app.databinding.ActivityMainBinding
-import com.news.app.ui.fragments.APPLY_FILTERS_KEY
-import com.news.app.ui.fragments.DISABLE_FILTERS_KEY
+import com.news.app.feature_headlines.ui.fragment.APPLY_FILTERS_KEY
+import com.news.app.feature_headlines.ui.fragment.DISABLE_FILTERS_KEY
+import com.news.app.feature_headlines.ui.fragment.FILTERS_KEY
+import com.news.app.feature_headlines.ui.fragment.FiltersFragment
+import com.news.app.feature_headlines.ui.fragment.HeadLinesFragment
+import com.news.app.feature_headlines.ui.fragment.SEND_FILTERS_KEY
+import com.news.app.feature_headlines.ui.fragment.SEND_FILTERS_TO_ACTIVITY_KEY
+import com.news.app.feature_saved.ui.fragment.SavedFragment
 import com.news.app.ui.fragments.ErrorFragment
-import com.news.app.ui.fragments.FILTERS_KEY
-import com.news.app.ui.fragments.FiltersFragment
-import com.news.app.ui.fragments.HeadLinesFragment
 import com.news.app.ui.fragments.NewsDetailsFragment
-import com.news.app.ui.fragments.SEND_FILTERS_KEY
-import com.news.app.ui.fragments.SEND_FILTERS_TO_ACTIVITY_KEY
-import com.news.app.ui.fragments.SavedFragment
-import com.news.app.ui.fragments.SourcesFragment
-import com.news.app.ui.model.Filters
 import com.news.app.ui.viewmodels.MainViewModel
-import kotlinx.coroutines.flow.onEach
+import com.news.core.MainAppNavigator
+import com.news.data.data_api.model.Article
+import com.news.data.data_api.model.Filters
+import com.news.feature_source.ui.fragment.SourcesFragment
 
 const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
 const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
 const val SEARCH_TEXT = "searchText"
 
-class MainActivity : AppCompatActivity(), Navigator {
+class MainActivity : AppCompatActivity(), MainAppNavigator {
 
     lateinit var binding: ActivityMainBinding
     val viewModel: MainViewModel by lazy {
@@ -338,7 +337,8 @@ class MainActivity : AppCompatActivity(), Navigator {
             .commit()
     }
 
-    override fun moveToDetailsFragment(fragment: Fragment, nameTag: String) {
+    override fun moveToDetailsFragment(article: Article, nameTag: String) {
+        val fragment = NewsDetailsFragment.newInstance(article)
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentContainerView.id, fragment, nameTag)
             .addToBackStack(nameTag)

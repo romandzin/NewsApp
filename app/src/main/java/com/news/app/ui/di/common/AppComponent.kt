@@ -1,13 +1,12 @@
 package com.news.app.ui.di.common
 
 import android.content.Context
-import com.news.app.core.AppDependenciesProvider
-import com.news.app.core.ApplicationComponent
-import com.news.app.core.ApplicationContextProvider
-import com.news.app.core.NetworkProvider
+import com.news.core.AppDependenciesProvider
+import com.news.core.ApplicationComponent
+import com.news.core.ApplicationContextProvider
+import com.news.core.NetworkProvider
 import dagger.BindsInstance
 import dagger.Component
-import javax.inject.Named
 
 @Component(
     dependencies = [NetworkProvider::class, ApplicationContextProvider::class],

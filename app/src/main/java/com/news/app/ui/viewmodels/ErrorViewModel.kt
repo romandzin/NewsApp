@@ -1,10 +1,8 @@
 package com.news.app.ui.viewmodels
 
-import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.news.app.R
 import com.news.app.ui.fragments.ANOTHER_ERROR
 import com.news.app.ui.fragments.NO_INTERNET_ERROR
 
