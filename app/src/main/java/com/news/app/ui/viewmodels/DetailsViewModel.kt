@@ -68,18 +68,25 @@ class DetailsViewModel : ViewModel() {
     private fun createClickableText(article: Article) {
         if (article.content != null) {
             val separated = article.content!!.split("[+")
-            val clickable = "[+${separated[1]}"
-            val spannableString = SpannableString(article.content)
-            val clickableSpan: ClickableSpan = object : ClickableSpan() {
-                override fun onClick(widget: View) {
-                    viewModelScope.launch {
-                        if (article.url == "") url.emit("https://google.com")
-                        else url.emit(article.url)
+            if (separated.size != 1) {
+                val clickable = "[+${separated[1]}"
+                val spannableString = SpannableString(article.content)
+                val clickableSpan: ClickableSpan = object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        viewModelScope.launch {
+                            if (article.url == "") url.emit("https://google.com")
+                            else url.emit(article.url)
+                        }
                     }
                 }
+                spannableString.setSpan(
+                    clickableSpan,
+                    separated[0].length,
+                    separated[0].length + clickable.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                clickableText.value = spannableString
             }
-            spannableString.setSpan(clickableSpan, separated[0].length, separated[0].length + clickable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            clickableText.value = spannableString
         }
     }
 

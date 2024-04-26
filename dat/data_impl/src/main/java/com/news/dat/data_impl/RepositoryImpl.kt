@@ -41,11 +41,11 @@ class RepositoryImpl @Inject constructor(
             .take(1)
             .flatMap { arrayList ->
                 if (arrayList.isEmpty()) {
-                    return@flatMap newsServiceApi.getHeadlinesNews(category, pageSize, page)
+                    return@flatMap Observable.fromArray(arrayListOf(Article(Source("", ""), "1", ",", "", ""))).subscribeOn(Schedulers.io())/*newsServiceApi.getHeadlinesNews(category, pageSize, page)
                         .flatMap { response ->
                             saveToCache(response.articles, category, page)
                             Observable.fromArray(response.articles).subscribeOn(Schedulers.io())
-                        }
+                        } */
                 }
                 else {
                     val articlesList: ArrayList<Article> =

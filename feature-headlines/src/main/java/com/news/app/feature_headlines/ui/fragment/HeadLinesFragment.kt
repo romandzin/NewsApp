@@ -18,6 +18,7 @@ import com.news.core.App
 import com.news.core.MainAppNavigator
 import com.news.data.data_api.model.Article
 import com.news.data.data_api.model.Filters
+import moxy.ktx.moxyPresenter
 import moxy.presenter.InjectPresenter
 
 const val SEARCH_ENABLED_KEY = "searchKey"
