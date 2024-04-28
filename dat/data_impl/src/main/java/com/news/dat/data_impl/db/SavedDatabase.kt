@@ -8,7 +8,7 @@ import com.news.dat.data_impl.model.db_entities.SourceDbEntity
 import com.news.dat.data_impl.model.db_entities.ArticleSourceCacheDbEntity
 
 @Database(
-    version = 4,
+    version = 5,
     entities = [
         ArticleSavedDbEntity::class,
         ArticleCacheDbEntity::class,
