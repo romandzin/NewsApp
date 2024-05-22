@@ -31,7 +31,7 @@ class RepositoryImpl @Inject constructor(
 
     private val oldSavedArticles = mutableListOf<ArticleSavedDbEntity>()
 
-    @SuppressLint("CheckResult")
+
     override fun getHeadlinesNews(
         category: String,
         pageSize: Int,
@@ -140,7 +140,6 @@ class RepositoryImpl @Inject constructor(
         return !(articleDate.before(fromDate) || articleDate.after(toDate))
     }
 
-    @SuppressLint("CheckResult")
     override fun getSources(): Observable<ArrayList<Source>> {
         return cachedDao.getCachedSources()
             .take(1)
@@ -161,7 +160,6 @@ class RepositoryImpl @Inject constructor(
             }
     }
 
-    @SuppressLint("CheckResult")
     override fun getSavedList(): Flowable<ArrayList<Article?>> {
         return savedDao.getAllArticles()
             .take(1)

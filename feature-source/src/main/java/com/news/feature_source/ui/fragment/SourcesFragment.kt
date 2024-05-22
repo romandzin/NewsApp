@@ -23,6 +23,7 @@ const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
 const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
 const val SEARCH_TEXT = "searchText"
+
 class SourcesFragment : Fragment() {
 
     private lateinit var binding: FragmentSourcesBinding
@@ -40,8 +41,12 @@ class SourcesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSourcesBinding.inflate(layoutInflater)
-        initFragment()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initFragment()
     }
 
     private fun observeError() {
@@ -94,6 +99,7 @@ class SourcesFragment : Fragment() {
     private fun displayArticlesList(newsList: ArrayList<Article>) {
         articlesAdapter!!.setData(articlesAdapter!!.arrayList, newsList)
     }
+
     fun showArticles(source: String, name: String) {
         showLoading()
         setAdapterArticles(arrayListOf())
@@ -131,7 +137,7 @@ class SourcesFragment : Fragment() {
     private fun displayEmptyList() {
         val adapter = binding.sourcesRecyclerView.adapter
         if (adapter is ArticlesAdapter)
-        adapter.setData(adapter.arrayList, arrayListOf())
+            adapter.setData(adapter.arrayList, arrayListOf())
         else (adapter as SourcesAdapter).setData(adapter.arrayList, arrayListOf())
     }
 

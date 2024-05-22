@@ -18,6 +18,7 @@ const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
 const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
 const val SEARCH_TEXT = "searchText"
+
 class SavedFragment : Fragment() {
 
     private lateinit var binding: FragmentSavedBinding
@@ -34,8 +35,12 @@ class SavedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSavedBinding.inflate(layoutInflater)
-        initFragment()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initFragment()
     }
 
     private fun initFragment() {

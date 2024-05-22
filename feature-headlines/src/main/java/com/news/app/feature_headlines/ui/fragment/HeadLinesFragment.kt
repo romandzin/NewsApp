@@ -25,6 +25,7 @@ const val SEARCH_ENABLED_KEY = "searchKey"
 const val SEARCH_ENABLED = "searchEnable"
 const val SEARCH_TEXT_ENTERED_KEY = "searchTextEntered"
 const val SEARCH_TEXT = "searchText"
+
 class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
 
     @InjectPresenter
@@ -40,6 +41,11 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHeadLinesBinding.inflate(layoutInflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         headlinesPresenter.init((requireActivity().application as App).provideAppDependenciesProvider())
         setAdapter()
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -63,7 +69,6 @@ class HeadLinesFragment : MvpAppCompatFragment(), HeadLinesView {
             headlinesPresenter.refreshView()
         }
         setFragmentResultListeners()
-        return binding.root
     }
 
     private fun setFragmentResultListeners() {

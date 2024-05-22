@@ -9,6 +9,7 @@ import com.news.core.AppDependenciesProvider
 import com.news.data.data_api.model.Article
 import com.news.data.data_api.model.InAppError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.Locale
 
@@ -26,15 +27,16 @@ class SavedViewModel : ViewModel() {
     private var _unshowError = MutableLiveData<Boolean?>()
     val unshowError = _unshowError
 
+    val compositeDisposable = CompositeDisposable()
+
     fun init(appDependencies: AppDependenciesProvider) {
         savedListUseCase = SavedListUseCase(appDependencies.provideRepository())
         getList()
     }
 
-    @SuppressLint("CheckResult")
     private fun getList() {
         val function = { getListWithError() }
-        savedListUseCase()
+        val disposable = savedListUseCase()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ savedList ->
@@ -48,11 +50,11 @@ class SavedViewModel : ViewModel() {
                     _errorState.value = error
                     _errorState.value = null
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
     private fun getListWithError() {
-        savedListUseCase()
+        val disposable = savedListUseCase()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { savedList ->
                 postValueAndNotSaveInCache(_unshowError, true)
@@ -60,6 +62,7 @@ class SavedViewModel : ViewModel() {
                 _savedList.value = savedList as ArrayList<Article>
                 listOfSavedArticles.addAll(savedList)
             }
+        compositeDisposable.add(disposable)
     }
 
     private fun <T> postValueAndNotSaveInCache(liveData: MutableLiveData<T>, value: T) {
@@ -86,5 +89,10 @@ class SavedViewModel : ViewModel() {
 
     fun refreshView() {
         getList()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 }

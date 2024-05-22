@@ -13,6 +13,7 @@ import com.news.data.data_api.model.Article
 import com.news.data.data_api.model.InAppError
 import com.news.data.data_api.model.Source
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import java.util.Locale
 
 class SourcesViewModel : ViewModel() {
@@ -38,6 +39,8 @@ class SourcesViewModel : ViewModel() {
 
     private var listOfSavedSources: ArrayList<Source> = arrayListOf()
     private var listOfSavedArticles: ArrayList<Article> = arrayListOf()
+
+    private val compositeDisposable = CompositeDisposable()
 
     fun init(appDependencies: com.news.core.AppDependenciesProvider) {
         isShowingArticles = false
@@ -71,10 +74,9 @@ class SourcesViewModel : ViewModel() {
         liveData.value = null
     }
 
-    @SuppressLint("CheckResult")
     private fun getSourcesList() {
         val function = { getSourcesListForErrorScreen() }
-        sourcesInteractor.sourcesUseCase()
+        val disposable = sourcesInteractor.sourcesUseCase()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ sourcesList ->
                 showSourcesListAndSave(sourcesList)
@@ -82,11 +84,11 @@ class SourcesViewModel : ViewModel() {
                 {
                     showError(function)
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
-    fun getSourcesListForErrorScreen() {
-        sourcesInteractor.sourcesUseCase()
+    private fun getSourcesListForErrorScreen() {
+        val disposable = sourcesInteractor.sourcesUseCase()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ sourcesList ->
                 postValueAndNotSaveInCache(_unshowError, true)
@@ -95,6 +97,7 @@ class SourcesViewModel : ViewModel() {
                 {
                     it.printStackTrace()
                 })
+        compositeDisposable.add(disposable)
     }
 
     private fun showSourcesListAndSave(sourcesList: ArrayList<Source>) {
@@ -136,13 +139,12 @@ class SourcesViewModel : ViewModel() {
         postValueAndNotSaveInCache(_articlesList, filteredList)
     }
 
-    @SuppressLint("CheckResult")
     private fun getHeadlinesNewsWithSource(
         sourceCategory: String,
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
         val function = { getHeadlinesNewsForErrorScreen(sourceCategory, subscribeAction) }
-        sourcesInteractor.headlinesBySourceUseCase(sourceCategory, pageSize, page)
+        val disposable = sourcesInteractor.headlinesBySourceUseCase(sourceCategory, pageSize, page)
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError { e -> e.printStackTrace() }
             .subscribe({ articlesArrayList ->
@@ -152,6 +154,7 @@ class SourcesViewModel : ViewModel() {
                 {
                     showError(function)
                 })
+        compositeDisposable.add(disposable)
     }
 
     private fun showError(function: () -> Unit) {
@@ -164,12 +167,11 @@ class SourcesViewModel : ViewModel() {
         }
     }
 
-    @SuppressLint("CheckResult")
     private fun getHeadlinesNewsForErrorScreen(
         sourceCategory: String,
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
-        sourcesInteractor.headlinesBySourceUseCase(sourceCategory, pageSize, page)
+        val disposable = sourcesInteractor.headlinesBySourceUseCase(sourceCategory, pageSize, page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 postValueAndNotSaveInCache(_unshowError, true)
@@ -178,6 +180,7 @@ class SourcesViewModel : ViewModel() {
                 {
                     it.printStackTrace()
                 })
+        compositeDisposable.add(disposable)
     }
 
     fun sourceClicked(source: String) {
@@ -190,4 +193,8 @@ class SourcesViewModel : ViewModel() {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
+    }
 }

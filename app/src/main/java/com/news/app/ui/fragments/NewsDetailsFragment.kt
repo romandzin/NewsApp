@@ -6,14 +6,15 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.news.app.R
 import com.news.app.common.Extensions.getParcelableCompat
 import com.news.core.App
@@ -23,9 +24,7 @@ import com.news.app.ui.viewmodels.DetailsViewModel
 import com.news.core.MainAppNavigator
 import com.news.data.data_api.model.Article
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 const val NEWS_KEY = "news_key"
@@ -44,6 +43,11 @@ class NewsDetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentNewsDetailsBinding.inflate(layoutInflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         DaggerDetailsComponent
             .builder()
             .build()
@@ -52,12 +56,11 @@ class NewsDetailsFragment : Fragment() {
         detailsViewModel.init((requireActivity().application as App).provideAppDependenciesProvider())
         activity?.window?.statusBarColor = Color.TRANSPARENT
         updateIfBundleExists()
-        return binding.root
     }
 
     private fun updateIfBundleExists() {
         lifecycleScope.launch {
-            withContext(Dispatchers.Main) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 detailsViewModel.saved.collect { saved ->
                     if (saved) binding.bookmarkButton.setImageDrawable(
                         ResourcesCompat.getDrawable(
@@ -78,7 +81,6 @@ class NewsDetailsFragment : Fragment() {
         }
         lifecycleScope.launch {
             detailsViewModel.url.collect { url ->
-                Log.d("tag", url)
                 if (url != "") {
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     startActivity(browserIntent)
@@ -91,30 +93,28 @@ class NewsDetailsFragment : Fragment() {
             }
         }
         lifecycleScope.launch {
-            withContext(Dispatchers.Main) {
-                detailsViewModel.currentArticleFlow.collect { article ->
-                    if (article != null) {
-                        setDataToUI(article)
-                    }
+            detailsViewModel.currentArticleFlow.collect { article ->
+                if (article != null) {
+                    setDataToUI(article)
                 }
             }
         }
         val bundleData = getBundleData()
         if (bundleData != null) {
-            detailsViewModel.bundleDataIsGet(bundleData)
+            detailsViewModel.onBundleDataIsGet(bundleData)
         }
     }
 
     private fun initButtons() {
         binding.bookmarkButton.setOnClickListener {
-            detailsViewModel.bookmarkButtonClicked()
+            detailsViewModel.onBookmarkButtonClicked()
         }
         binding.backButton.setOnClickListener {
             mainAppNavigator.goBack()
         }
     }
 
-        private fun getBundleData(): Article? {
+    private fun getBundleData(): Article? {
         val bundle = this.arguments
         if (bundle != null) {
             return bundle.getParcelableCompat(NEWS_KEY, Article::class.java)

@@ -44,9 +44,13 @@ class FiltersFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentFiltersBinding.inflate(layoutInflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         initView()
         setReadyButtonListener()
-        return binding.root
     }
 
     private fun initView() {

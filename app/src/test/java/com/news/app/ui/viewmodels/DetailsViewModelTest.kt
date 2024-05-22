@@ -47,8 +47,8 @@ class DetailsViewModelTest : BehaviorSpec({
 
     Given("saved value true") {
         When("bookmark button clicked") {
-            detailsViewModel.bundleDataIsGet(testArticle)
-            detailsViewModel.bookmarkButtonClicked()
+            detailsViewModel.onBundleDataIsGet(testArticle)
+            detailsViewModel.onBookmarkButtonClicked()
             Then("check when value is true") {
                 coVerify {
                     scope.launch {
@@ -60,8 +60,8 @@ class DetailsViewModelTest : BehaviorSpec({
     }
 
     Given("get current date") {
-        detailsViewModel.bundleDataIsGet(testArticle)
-        detailsViewModel.bookmarkButtonClicked()
+        detailsViewModel.onBundleDataIsGet(testArticle)
+        detailsViewModel.onBookmarkButtonClicked()
         Then("check if date is getting properly") {
             verify {
                 scope.launch { repository.saveArticle(testArticle, savedDate) }
@@ -80,7 +80,7 @@ class DetailsViewModelTest : BehaviorSpec({
 
     Given("calling bundleDataIsGet") {
         When("bundle data is get") {
-            detailsViewModel.bundleDataIsGet(testArticle)
+            detailsViewModel.onBundleDataIsGet(testArticle)
             Then("check saved methods in it") {
                 detailsViewModel.currentArticleFlow.value shouldBe testArticle
                 verify(atLeast = 1) {

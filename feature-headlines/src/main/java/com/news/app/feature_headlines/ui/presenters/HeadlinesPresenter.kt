@@ -13,6 +13,7 @@ import com.news.core.NO_INTERNET_ERROR
 import com.news.data.data_api.model.Article
 import com.news.data.data_api.model.Filters
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import moxy.InjectViewState
 import moxy.MvpPresenter
 import java.util.Locale
@@ -30,6 +31,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     private var pageSize = 8
     private var headlinesArticles = arrayListOf<Article>()
     private var filteredArticles = arrayListOf<Article>()
+    private val compositeDisposable = CompositeDisposable()
 
 
     fun init(appDependencies: AppDependenciesProvider) {
@@ -63,10 +65,10 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         }
     }
 
-    @SuppressLint("CheckResult")
+
     fun searchInArrayByText(text: String) {
         if (observerInternetConnection()) {
-            headlinesInteractor.headlinesByQueryUseCase(category, text)
+            val disposable = headlinesInteractor.headlinesByQueryUseCase(category, text)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ newsList ->
                     viewState.displayNewsList(newsList)
@@ -74,6 +76,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 }, {
                     viewState.displayNewsList(arrayListOf())
                 })
+            compositeDisposable.add(disposable)
         } else {
             searchInCacheByText(text)
         }
@@ -159,9 +162,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         }
     }
 
-    @SuppressLint("CheckResult")
     private fun getHeadlinesNewsWithErrorScreen(subscribeAction: (ArrayList<Article>) -> Unit) {
-        headlinesInteractor.headlinesUseCase(category, pageSize, page)
+        val disposable = headlinesInteractor.headlinesUseCase(category, pageSize, page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
@@ -170,12 +172,12 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     it.printStackTrace()
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
     private fun getHeadlinesNews(subscribeAction: (ArrayList<Article>) -> Unit) {
         val function = { getHeadlinesNewsWithErrorScreen(subscribeAction) }
-        headlinesInteractor.headlinesUseCase(category, pageSize, page)
+        val disposable = headlinesInteractor.headlinesUseCase(category, pageSize, page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
@@ -183,12 +185,12 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     showError(it, function)
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
     private fun getAllCachedArticlesByPage(subscribeAction: (ArrayList<Article>) -> Unit) {
         val function = { getAllCachedArticlesByPageForErrorScreen(subscribeAction) }
-        headlinesInteractor.allCachedHeadlinesUseCase(category, page)
+        val disposable = headlinesInteractor.allCachedHeadlinesUseCase(category, page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
@@ -196,11 +198,11 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     showError(it, function)
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
     private fun getAllCachedArticlesByPageForErrorScreen(subscribeAction: (ArrayList<Article>) -> Unit) {
-        headlinesInteractor.allCachedHeadlinesUseCase(category, page)
+        val disposable = headlinesInteractor.allCachedHeadlinesUseCase(category, page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ arrayList ->
                 subscribeAction(arrayList)
@@ -209,6 +211,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     it.printStackTrace()
                 })
+        compositeDisposable.add(disposable)
     }
 
     private fun showError(
@@ -221,7 +224,6 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         } else viewState.showError(NO_INTERNET_ERROR, function)
     }
 
-    @SuppressLint("CheckResult")
     private fun getFilteredNews(
         filters: Filters,
         isInternetEnabled: Boolean,
@@ -229,7 +231,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
     ) {
         isFiltersEnabled = true
         val function = { getFilteredNewsWithError(filters, isInternetEnabled, subscribeAction) }
-        headlinesInteractor.filteredNewsUseCase(
+        val disposable = headlinesInteractor.filteredNewsUseCase(
             filters,
             isInternetEnabled
         )
@@ -241,15 +243,15 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     showError(it, function)
                 })
+        compositeDisposable.add(disposable)
     }
 
-    @SuppressLint("CheckResult")
     private fun getFilteredNewsWithError(
         filters: Filters,
         isInternetEnabled: Boolean,
         subscribeAction: (ArrayList<Article>) -> Unit
     ) {
-        headlinesInteractor.filteredNewsUseCase(
+        val disposable = headlinesInteractor.filteredNewsUseCase(
             filters,
             isInternetEnabled
         )
@@ -262,6 +264,7 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
                 {
                     it.printStackTrace()
                 })
+        compositeDisposable.add(disposable)
     }
 
     fun searchEnabledResultGet() {
@@ -272,4 +275,8 @@ class HeadlinesPresenter : MvpPresenter<HeadLinesView>() {
         viewState.disableSearchModeInFragment()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.dispose()
+    }
 }

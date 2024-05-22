@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ClickableSpan
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.news.data.data_api.Repository
 import com.news.data.data_api.model.Article
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -28,10 +30,11 @@ class DetailsViewModel : ViewModel() {
     private var currentArticle: Article? = null
     var saved = MutableStateFlow(false)
     var currentArticleFlow = MutableStateFlow(currentArticle)
-    var url = MutableSharedFlow<String>(0, 1, BufferOverflow.DROP_OLDEST)
+    var url = MutableStateFlow("")
     var clickableText = MutableStateFlow(SpannableString(""))
+    private val compositeDisposable = CompositeDisposable()
 
-    fun bookmarkButtonClicked() {
+    fun onBookmarkButtonClicked() {
         if (!saved.value) saveArticle()
         else deleteArticle()
     }
@@ -58,7 +61,7 @@ class DetailsViewModel : ViewModel() {
         dataRepository = appDependencies.provideRepository()
     }
 
-    fun bundleDataIsGet(article: Article) {
+    fun onBundleDataIsGet(article: Article) {
         currentArticle = article
         currentArticleFlow.value = article
         createClickableText(article)
@@ -95,9 +98,8 @@ class DetailsViewModel : ViewModel() {
         return simpleDateFormat.format(Calendar.getInstance().time)
     }
 
-    @SuppressLint("CheckResult")
     fun checkIfElementSaved() {
-        dataRepository.getSavedList()
+        val disposable = dataRepository.getSavedList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { savedList ->
@@ -106,5 +108,11 @@ class DetailsViewModel : ViewModel() {
                     if (article?.newsTitle == currentArticle?.newsTitle) saved.value = true
                 }
             }
+        compositeDisposable.add(disposable)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 }
